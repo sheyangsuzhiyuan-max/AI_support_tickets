@@ -1,0 +1,16 @@
+numpy
+pandas
+scikit-learn
+matplotlib
+jupyterlab
+ipykernel
+
+torch
+torchvision
+torchaudio
+
+datasets
+transformers
+accelerate
+tqdm
+pyyaml

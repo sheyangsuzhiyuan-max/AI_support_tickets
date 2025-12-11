@@ -1,0 +1,32 @@
+name: cs_tickets
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+
+  # Core scientific stack
+  - numpy
+  - pandas
+  - scikit-learn
+  - matplotlib
+
+  # Notebooks
+  - jupyterlab
+  - ipykernel
+
+  # Deep learning
+  - pytorch
+  - torchvision
+  - torchaudio
+
+  # Hugging Face / utilities
+  - datasets
+  - tqdm
+  - pyyaml
+
+  - pip
+  - pip:
+      - transformers
+      - accelerate
