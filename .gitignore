@@ -176,8 +176,8 @@ marimo/_lsp/
 __marimo__/
 
 # --- Data & models (large artifacts should not go into git) ---
-data/raw/
-data/processed/
+# data/raw/
+# data/processed/
 models/
 checkpoints/
 outputs/
