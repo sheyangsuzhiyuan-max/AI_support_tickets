@@ -196,3 +196,13 @@ logs/
 # --- Misc caches ---
 .cache/
 hf_cache/
+
+src/model/distilbert-base-uncased/
+src/model/distilbert-base-uncased.zip
+
+# 不要提交本地模型文件 & macOS 垃圾
+src/model/distilbert-base-uncased/
+src/model/__MACOSX/
+src/model/._*
+*.safetensors
+*.bin
