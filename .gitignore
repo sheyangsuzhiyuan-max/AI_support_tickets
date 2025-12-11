@@ -182,6 +182,14 @@ models/
 checkpoints/
 outputs/
 
+# Model files (too large for GitHub)
+*.pt
+*.pth
+*.joblib
+*.pkl
+*.h5
+*.onnx
+
 # --- Logs / temp files ---
 logs/
 
