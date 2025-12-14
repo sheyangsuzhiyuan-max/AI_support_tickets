@@ -1435,6 +1435,209 @@ def section_9_references():
     return section
 
 
+def train_logreg_if_needed(data_dict):
+    """Train Logistic Regression if model doesn't exist."""
+    if os.path.exists('src/model/baseline_logreg.joblib') and os.path.exists('src/model/tfidf_vectorizer.joblib'):
+        return False  # Already exists
+
+    print("\n" + "="*80)
+    print("Training Logistic Regression (first time setup)")
+    print("="*80)
+
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.linear_model import LogisticRegression
+    from src.text_preprocess import basic_clean
+    import joblib
+
+    train_texts = data_dict['train_texts']
+    train_labels = data_dict['train_labels']
+    train_texts_clean = [basic_clean(text) for text in train_texts]
+
+    print("Training TF-IDF vectorizer...")
+    tfidf_vectorizer = TfidfVectorizer(max_features=10000, ngram_range=(1, 2))
+    X_train = tfidf_vectorizer.fit_transform(train_texts_clean)
+
+    print("Training Logistic Regression...")
+    logreg_model = LogisticRegression(max_iter=1000, C=1.0)
+    logreg_model.fit(X_train, train_labels)
+
+    os.makedirs('src/model', exist_ok=True)
+    joblib.dump(tfidf_vectorizer, 'src/model/tfidf_vectorizer.joblib')
+    joblib.dump(logreg_model, 'src/model/baseline_logreg.joblib')
+
+    print("✓ Logistic Regression trained and saved (<1 min)")
+    return True
+
+
+def train_textcnn_if_needed(data_dict):
+    """Train TextCNN if model doesn't exist."""
+    if os.path.exists('src/model/textcnn.pt'):
+        return False
+
+    print("\n" + "="*80)
+    print("Training TextCNN (first time setup, ~10 minutes)")
+    print("="*80)
+
+    import torch
+    import torch.nn as nn
+    from torch.utils.data import Dataset, DataLoader
+    from collections import Counter
+    from src.model.text_cnn import TextCNN
+    from src.text_preprocess import basic_clean
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    train_texts = [basic_clean(t) for t in data_dict['train_texts']]
+    train_labels = data_dict['train_labels']
+
+    # Build vocabulary
+    print("Building vocabulary...")
+    all_words = []
+    for text in train_texts:
+        all_words.extend(text.split())
+    word_counts = Counter(all_words)
+    vocab = {'<PAD>': 0, '<UNK>': 1}
+    for word, _ in word_counts.most_common(20000):
+        vocab[word] = len(vocab)
+
+    # Dataset
+    class TextDataset(Dataset):
+        def __init__(self, texts, labels, vocab, max_len=128):
+            self.texts = texts
+            self.labels = labels
+            self.vocab = vocab
+            self.max_len = max_len
+
+        def __len__(self):
+            return len(self.texts)
+
+        def __getitem__(self, idx):
+            words = self.texts[idx].split()[:self.max_len]
+            tokens = [self.vocab.get(w, self.vocab['<UNK>']) for w in words]
+            padded = tokens + [self.vocab['<PAD>']] * (self.max_len - len(tokens))
+            return torch.tensor(padded, dtype=torch.long), torch.tensor(self.labels[idx], dtype=torch.long)
+
+    train_dataset = TextDataset(train_texts, train_labels, vocab)
+    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+
+    # Model
+    model = TextCNN(vocab_size=len(vocab), num_classes=3).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    criterion = nn.CrossEntropyLoss()
+
+    # Train
+    print("Training TextCNN (10 epochs)...")
+    model.train()
+    for epoch in range(10):
+        total_loss = 0
+        for inputs, labels in train_loader:
+            inputs, labels = inputs.to(device), labels.to(device)
+            optimizer.zero_grad()
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            total_loss += loss.item()
+        if (epoch + 1) % 2 == 0:
+            print(f"  Epoch {epoch+1}/10, Loss: {total_loss/len(train_loader):.4f}")
+
+    # Save
+    torch.save({
+        'model_state_dict': model.state_dict(),
+        'vocab': vocab,
+        'model_config': {'vocab_size': len(vocab), 'num_classes': 3}
+    }, 'src/model/textcnn.pt')
+
+    print("✓ TextCNN trained and saved")
+    return True
+
+
+def train_bert_if_needed(data_dict):
+    """Train BERT if model doesn't exist."""
+    if os.path.exists('src/model/bert_finetuned.pt'):
+        return False
+
+    print("\n" + "="*80)
+    print("Training BERT (first time setup, ~30 minutes)")
+    print("="*80)
+
+    import torch
+    import torch.nn as nn
+    from torch.utils.data import Dataset, DataLoader
+    from src.model.bert_model import BertClassifier, get_tokenizer
+    from src.text_preprocess import basic_clean
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model_name = 'distilbert-base-uncased'
+
+    train_texts = [basic_clean(t) for t in data_dict['train_texts']]
+    train_labels = data_dict['train_labels']
+
+    print(f"Loading tokenizer from HuggingFace: {model_name}...")
+    tokenizer = get_tokenizer(model_name)
+
+    # Dataset
+    class BertDataset(Dataset):
+        def __init__(self, texts, labels, tokenizer, max_length=128):
+            self.texts = texts
+            self.labels = labels
+            self.tokenizer = tokenizer
+            self.max_length = max_length
+
+        def __len__(self):
+            return len(self.texts)
+
+        def __getitem__(self, idx):
+            encoding = self.tokenizer(
+                str(self.texts[idx]),
+                truncation=True,
+                padding='max_length',
+                max_length=self.max_length,
+                return_tensors='pt'
+            )
+            return {
+                'input_ids': encoding['input_ids'].flatten(),
+                'attention_mask': encoding['attention_mask'].flatten(),
+                'labels': torch.tensor(self.labels[idx], dtype=torch.long)
+            }
+
+    train_dataset = BertDataset(train_texts, train_labels, tokenizer)
+    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+
+    # Model
+    print("Initializing BERT model...")
+    model = BertClassifier(model_name=model_name, num_classes=3, dropout=0.3).to(device)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=2e-5)
+    criterion = nn.CrossEntropyLoss()
+
+    # Train
+    print("Training BERT (3 epochs)...")
+    model.train()
+    for epoch in range(3):
+        total_loss = 0
+        for batch in train_loader:
+            input_ids = batch['input_ids'].to(device)
+            attention_mask = batch['attention_mask'].to(device)
+            labels = batch['labels'].to(device)
+
+            optimizer.zero_grad()
+            outputs = model(input_ids, attention_mask)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            total_loss += loss.item()
+        print(f"  Epoch {epoch+1}/3, Loss: {total_loss/len(train_loader):.4f}")
+
+    # Save
+    torch.save({
+        'model_state_dict': model.state_dict(),
+        'model_name': model_name,
+        'num_classes': 3
+    }, 'src/model/bert_finetuned.pt')
+
+    print("✓ BERT trained and saved")
+    return True
+
+
 def main():
     parser = argparse.ArgumentParser(description='Generate CA6000 Assignment Report')
     parser.add_argument('--skip-train', action='store_true', help='Skip training (use existing models)')
@@ -1451,6 +1654,15 @@ def main():
     # Section 1: Dataset
     section1, data_dict = section_1_dataset()
     report += section1
+
+    # Train models if needed (first time setup)
+    print("\n" + "="*80)
+    print("Checking Models...")
+    print("="*80)
+    train_logreg_if_needed(data_dict)
+    train_textcnn_if_needed(data_dict)
+    train_bert_if_needed(data_dict)
+    print("\n✓ All models ready")
 
     # Section 2: Data Cleaning
     section2 = section_2_data_cleaning(data_dict)

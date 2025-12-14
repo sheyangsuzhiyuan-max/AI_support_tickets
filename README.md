@@ -33,15 +33,19 @@ Generate a complete assignment report comparing Logistic Regression, TextCNN, an
 ### Run Assignment
 
 ```bash
-# Generate complete assignment report
+# One-click: automatically trains models on first run, then generates report
 python run_assignment.py
 
-# Quick test (skip some sections)
+# Quick test mode
 python run_assignment.py --quick
-
-# Use existing models (no retraining)
-python run_assignment.py --skip-train
 ```
+
+**First Run:** Will automatically train all models (~40 minutes total):
+- Logistic Regression (<1 min)
+- TextCNN (~10 min)
+- BERT (~30 min)
+
+**Subsequent Runs:** Uses existing models, generates report in seconds.
 
 ### What It Does
 
@@ -295,12 +299,17 @@ Remove local model files and temporary data:
 # Upload to server
 scp -r . user@server:~/project/
 
-# Run on server
+# Run on server (one command!)
 ssh user@server
 cd ~/project
 python run_assignment.py
+
+# Download report
+exit
 scp user@server:~/project/CA6000_Assignment_Report.md .
 ```
+
+**Note:** First run will take ~40 minutes to train all models automatically.
 
 ### For Personal Project
 
