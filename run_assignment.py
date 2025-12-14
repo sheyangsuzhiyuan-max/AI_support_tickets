@@ -1557,7 +1557,7 @@ def train_bert_if_needed(data_dict):
         return False
 
     print("\n" + "="*80)
-    print("Training BERT (first time setup, ~30 minutes)")
+    print("Training BERT (first time setup, ~50 minutes)")
     print("="*80)
 
     import torch
@@ -1606,13 +1606,13 @@ def train_bert_if_needed(data_dict):
     # Model
     print("Initializing BERT model...")
     model = BertClassifier(model_name=model_name, num_classes=3, dropout=0.3).to(device)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=2e-5)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=3e-5)
     criterion = nn.CrossEntropyLoss()
 
     # Train
-    print("Training BERT (3 epochs)...")
+    print("Training BERT (5 epochs)...")
     model.train()
-    for epoch in range(3):
+    for epoch in range(5):
         total_loss = 0
         for batch in train_loader:
             input_ids = batch['input_ids'].to(device)
@@ -1625,7 +1625,7 @@ def train_bert_if_needed(data_dict):
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
-        print(f"  Epoch {epoch+1}/3, Loss: {total_loss/len(train_loader):.4f}")
+        print(f"  Epoch {epoch+1}/5, Loss: {total_loss/len(train_loader):.4f}")
 
     # Save
     torch.save({
