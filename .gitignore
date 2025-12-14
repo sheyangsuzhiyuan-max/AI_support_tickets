@@ -182,7 +182,7 @@ models/
 checkpoints/
 outputs/
 
-# Model files (too large for GitHub)
+# Model files (will be trained on server)
 *.pt
 *.pth
 *.joblib
