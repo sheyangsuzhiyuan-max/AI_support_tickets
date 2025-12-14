@@ -6,15 +6,14 @@ from typing import Optional
 
 from transformers import AutoTokenizer
 
-def get_tokenizer(model_name: str):
+def get_tokenizer(model_name: str = "distilbert-base-uncased"):
     """
-    Get tokenizer for the specified model.
+    Get tokenizer for the specified model from HuggingFace Hub.
+
+    Args:
+        model_name: HuggingFace model identifier (default: distilbert-base-uncased)
     """
-    import os
-    # 如果是相对路径，先转成绝对路径（更稳）
-    if os.path.isdir(model_name):
-        model_name = os.path.abspath(model_name)
-    return AutoTokenizer.from_pretrained(model_name, local_files_only=True)
+    return AutoTokenizer.from_pretrained(model_name)
 
 
 
@@ -25,7 +24,7 @@ class BertClassifier(nn.Module):
 
     def __init__(
         self,
-        model_name: str,
+        model_name: str = "distilbert-base-uncased",
         num_classes: int = 3,
         dropout: float = 0.3,
         freeze_bert: bool = False,
@@ -34,11 +33,11 @@ class BertClassifier(nn.Module):
 
         self.model_name = model_name
 
-        # ✅ 从本地目录加载 BERT，不访问 HuggingFace Hub
-        self.bert = AutoModel.from_pretrained(model_name, local_files_only=True)
+        # Load BERT from HuggingFace Hub
+        self.bert = AutoModel.from_pretrained(model_name)
 
-        # 同样本地加载 config
-        config = AutoConfig.from_pretrained(model_name, local_files_only=True)
+        # Load config from HuggingFace Hub
+        config = AutoConfig.from_pretrained(model_name)
         hidden_size = config.hidden_size
 
         if freeze_bert:

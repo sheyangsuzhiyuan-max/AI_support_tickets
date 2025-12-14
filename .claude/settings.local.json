@@ -4,7 +4,8 @@
       "Bash(chmod:*)",
       "Bash(git init:*)",
       "Bash(git commit:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(pkill:*)"
     ]
   }
 }

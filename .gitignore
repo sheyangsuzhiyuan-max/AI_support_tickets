@@ -197,12 +197,18 @@ logs/
 .cache/
 hf_cache/
 
+# 本地下载的BERT模型文件夹 (现在从HuggingFace在线加载)
 src/model/distilbert-base-uncased/
-src/model/distilbert-base-uncased.zip
-
-# 不要提交本地模型文件 & macOS 垃圾
-src/model/distilbert-base-uncased/
-src/model/__MACOSX/
-src/model/._*
+notebooks/distilbert-base-uncased/
 *.safetensors
 *.bin
+
+# 临时生成的error analysis文件
+data/val_predictions*.csv
+data/val_errors*.csv
+data/bert_experiments*.json
+data/bert_experiments*.csv
+
+# macOS垃圾文件
+src/model/__MACOSX/
+src/model/._*

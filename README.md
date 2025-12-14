@@ -1,152 +1,389 @@
-# AI_support_tickets
+# AI Support Tickets Classification
 
-# AI Support Tickets Classification (3-Class) — BERT Fine-tuning & Error Analysis
+This NLP project classifies customer support tickets into **3 priority classes** (high, medium, low) using multiple approaches from traditional ML to state-of-the-art transformers.
 
-This resume-focused NLP project fine-tunes a pretrained Transformer (BERT/DistilBERT-family) to classify customer support tickets into **3 classes**. The repo emphasizes **controlled tuning strategies (ablation)**, **validation/test evaluation**, and **error analysis**, rather than production deployment.
-
----
-
-## Highlights
-- Compared **fine-tuning strategies** (ablation):
-  - Full fine-tuning (encoder + classifier head)
-  - Head-only training (encoder frozen)
-  - Partial unfreeze (last 2 encoder layers + head)
-- Reported **Accuracy + Macro-F1** (Macro-F1 highlights per-class performance)
-- Implemented evaluation workflow (confusion matrix / classification report / error analysis)
-- Best configuration: **Full fine-tuning with LR=3e-5**  
-  - **Test Acc: 0.7722**
-  - **Test Macro-F1: 0.7636**
+**Two Project Modes:**
+1. **📚 CA6000 Assignment** - Complete report generation for coursework
+2. **🔬 Personal Research** - BERT fine-tuning experiments
 
 ---
 
-## Results
+## Quick Start
 
-### Fine-tuning Strategy & Learning Rate (Validation)
+### Setup Environment
 
-| Exp ID | Description                            | Tuning Strategy               | LR (enc/head) | Val Acc | Val Macro-F1 | Notes           |
-| -----: | -------------------------------------- | ----------------------------- | ------------- | ------: | -----------: | --------------- |
-|     A1 | Full fine-tuning (baseline)            | Full FT                       | 2e-5 / 2e-5   |  0.7521 |       0.7466 | baseline        |
-|     A2 | Frozen encoder (train classifier only) | Head-only (encoder frozen)    | — / 1e-3      |  0.3774 |       0.3779 | underfits badly |
-|   A2.5 | Partial unfreeze (last 2 layers)       | Unfreeze last 2 layers + head | 2e-5 / 1e-3   |  0.6134 |       0.6108 | big gain vs A2  |
-|     B2 | Full fine-tuning, LR=3e-5              | Full FT                       | 3e-5 / 3e-5   |  0.7759 |       0.7701 | best overall    |
-|    B3* | Full fine-tuning, LR=5e-5 (optional)   | Full FT                       | 5e-5 / 5e-5   |         |              | optional        |
+```bash
+# Option A - Conda
+conda env create -f environment.yml
+conda activate <your-env-name>
 
-### Final Test Results
+# Option B - pip + venv
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
 
-| Exp ID | Model (final)               | Test Acc | Test Macro-F1 | Notes |
-| -----: | --------------------------- | -------: | ------------: | ----- |
-|     A1 | Full fine-tuning (baseline) |   0.7580 |        0.7512 | baseline |
-|     A2 | Head-only (frozen encoder)  |   0.3880 |        0.3888 | underfits |
-|   A2.5 | Partial unfreeze (last 2)   |   0.6323 |        0.6270 | improves vs A2 |
-|     B2 | Full fine-tuning (LR=3e-5)  |   0.7722 |        0.7636 | **best** |
+---
 
-**Recommended final model:** **B2 (Full fine-tuning, LR=3e-5)**
+## 📚 CA6000 Assignment Mode
+
+### Purpose
+Generate a complete assignment report comparing Logistic Regression, TextCNN, and BERT models.
+
+### Run Assignment
+
+```bash
+# Generate complete assignment report
+python run_assignment.py
+
+# Quick test (skip some sections)
+python run_assignment.py --quick
+
+# Use existing models (no retraining)
+python run_assignment.py --skip-train
+```
+
+### What It Does
+
+**Automated Report Generation:**
+1. ✅ **Data Import & Inspection** - Load 28K support tickets, show samples
+2. ✅ **Data Cleaning** - Error detection, text preprocessing, quality checks
+3. ✅ **Statistical Analysis** - Mean/median/variance, class distribution, text length stats
+4. ✅ **Model Training** - Logistic Regression, TextCNN, BERT
+5. ✅ **Evaluation** - Accuracy, F1, confusion matrices, error analysis
+6. ✅ **AI Assistant Usage** - Document how Claude/AI tools were used
+7. ✅ **Conclusion** - Summary of findings and recommendations
+
+**Output:**
+- `CA6000_Assignment_Report.md` - Complete markdown report (ready to submit)
+- Console output with progress and key metrics
+
+**Report Includes:**
+- ✓ Dataset source and import process
+- ✓ Error checking and cleaning steps
+- ✓ Statistical summary (mean, variance, distribution)
+- ✓ Three neural network models (LogReg, CNN, BERT)
+- ✓ Training process and evaluation
+- ✓ Final accuracy and performance metrics
+- ✓ AI coding assistant usage documentation
+
+### Assignment Requirements Checklist
+
+Per CA6000 specification:
+
+- ✅ Source of dataset and import method
+- ✅ Error checking and detection (NaN, outliers, value errors)
+- ✅ Data cleaning with Pandas functions
+- ✅ Summary statistics (mean/median, variance)
+- ✅ Neural network models for prediction
+- ✅ Training process and evaluation
+- ✅ Model accuracy and performance
+- ✅ AI assistant usage summary
+
+**Due Date:** 31-December-2025
+
+---
+
+## 🔬 Personal Research Mode
+
+### Purpose
+Explore BERT fine-tuning hyperparameters for optimal performance.
+
+### Run Personal Project
+
+```bash
+# Run all BERT fine-tuning experiments
+python run_personal_project.py
+
+# Quick test (1 epoch)
+python run_personal_project.py --quick
+
+# Run specific experiments only
+python run_personal_project.py --exp EXP1 EXP2
+```
+
+### Experiment Configurations
+
+| ID | Description | LR | Epochs | Freeze |
+|----|-------------|----|----- --|--------|
+| EXP1 | Baseline | 2e-5 | 3 | No |
+| EXP2 | Higher LR | 3e-5 | 3 | No |
+| EXP3 | Highest LR | 5e-5 | 3 | No |
+| EXP4 | Frozen encoder | 2e-5 | 3 | Yes |
+| EXP5 | More epochs | 3e-5 | 5 | No |
+
+### Output Files
+
+- `data/bert_experiments_<timestamp>.json` - Detailed results for all epochs
+- `data/bert_experiments_summary_<timestamp>.csv` - Summary table
+- Console: Real-time progress and best configuration
+
+### Features
+
+- ✅ **No Model Saving** - Only records metrics (saves disk space)
+- ✅ **Automatic Comparison** - Ranks experiments by validation F1
+- ✅ **GPU Memory Management** - Clears cache between experiments
+- ✅ **Progress Tracking** - tqdm progress bars for training
+- ✅ **Structured Logging** - JSON format for easy analysis
+
+---
+
+## Project Structure
+
+```
+.
+├── run_assignment.py              # 📚 CA6000 Assignment entry point
+├── run_personal_project.py        # 🔬 Personal research entry point
+│
+├── notebooks/
+│   ├── 01_eda.ipynb               # Exploratory data analysis
+│   ├── 02_baseline_ml.ipynb       # Logistic regression baseline
+│   ├── 03_cnn_model.ipynb         # TextCNN model
+│   ├── 04_bert_model.ipynb        # BERT training (for assignment)
+│   ├── 05_error_analysis.ipynb    # Multi-model comparison (for assignment)
+│   └── 06_bert_finetuning.ipynb   # BERT experiments (personal research)
+│
+├── src/
+│   ├── model/
+│   │   ├── bert_model.py          # BERT implementation (online loading)
+│   │   ├── text_cnn.py            # TextCNN implementation
+│   │   ├── baseline_logreg.joblib # Saved LogReg model
+│   │   ├── textcnn.pt             # Saved CNN checkpoint
+│   │   └── bert_finetuned.pt      # Saved BERT checkpoint
+│   ├── data_utils.py              # Data loading utilities
+│   ├── text_preprocess.py         # Text cleaning functions
+│   ├── features.py                # TF-IDF feature extraction
+│   └── evaluate.py                # Evaluation metrics
+│
+├── data/
+│   ├── raw/                       # Original data
+│   └── processed/                 # Processed splits
+│
+├── cleanup.sh                     # Clean local models and temp files
+├── requirements.txt
+├── environment.yml
+└── README.md
+```
+
+---
+
+## Key Features
+
+### 1. Online Model Loading ☁️
+- BERT models load from **HuggingFace Hub** (no local downloads needed)
+- First run downloads and caches to `~/.cache/huggingface/`
+- Saves ~512MB disk space
+- Easier server deployment
+
+### 2. Two Clear Entry Points 🚪
+
+**Assignment Mode (`run_assignment.py`):**
+- Generates complete CA6000 report
+- Evaluates existing trained models
+- Documents all required sections
+- Ready for submission
+
+**Research Mode (`run_personal_project.py`):**
+- Runs systematic BERT experiments
+- Compares different hyperparameters
+- Records results without saving models
+- Optimizes for best configuration
+
+### 3. Comprehensive Evaluation 📊
+- Accuracy, F1 (Macro/Weighted), Precision, Recall
+- Per-class metrics
+- Confusion matrices
+- Error analysis
+- Model comparison tables
+
+---
+
+## Model Performance
+
+### Assignment Models (Test Set)
+
+| Model | Accuracy | F1 Macro | F1 Weighted | Notes |
+|-------|----------|----------|-------------|-------|
+| Logistic Regression | ~64% | ~64% | ~65% | TF-IDF baseline |
+| TextCNN | ~61% | ~55% | ~58% | Needs tuning |
+| BERT (DistilBERT) | **~75-77%** | **~75-76%** | **~76%** | Best overall |
+
+### Personal Project Results (Validation Set)
+
+| Exp | Config | Val Acc | Val F1 | Notes |
+|-----|--------|---------|--------|-------|
+| B2 | LR=3e-5, Full FT, 3 epochs | 0.7759 | 0.7701 | **Recommended** |
+| A1 | LR=2e-5, Full FT, 3 epochs | 0.7521 | 0.7466 | Baseline |
+| A2.5 | Partial unfreeze, 2e-5 | 0.6134 | 0.6108 | Better than frozen |
+| A2 | Frozen encoder | 0.3774 | 0.3779 | Underfits |
+
+**Key Finding:** Full fine-tuning with LR=3e-5 achieves best results.
+
+---
+
+## Usage Examples
+
+### For Assignment Submission
+
+```bash
+# 1. Generate report
+python run_assignment.py
+
+# 2. Review report
+cat CA6000_Assignment_Report.md
+
+# 3. (Optional) Convert to PDF
+pandoc CA6000_Assignment_Report.md -o CA6000_Report.pdf
+
+# 4. Submit report + code
+```
+
+### For Personal Research
+
+```bash
+# On server with GPU
+python run_personal_project.py
+
+# Check results
+cat data/bert_experiments_summary_*.csv
+
+# Run more experiments with best LR
+python run_personal_project.py --exp EXP2 EXP5
+```
+
+### For Interactive Exploration
+
+```bash
+# Jupyter notebook for assignment (model comparison)
+jupyter notebook notebooks/05_error_analysis.ipynb
+
+# Jupyter notebook for assignment (BERT training)
+jupyter notebook notebooks/04_bert_model.ipynb
+
+# Jupyter notebook for personal project (BERT experiments)
+jupyter notebook notebooks/06_bert_finetuning.ipynb
+```
+
+---
+
+## Cleanup
+
+Remove local model files and temporary data:
+
+```bash
+./cleanup.sh
+```
+
+**Deletes:**
+- Local BERT model folders (~512MB)
+- Temporary CSV files
+- Python cache
+- Jupyter checkpoints
+
+**Keeps:**
+- Trained model checkpoints (*.pt, *.joblib)
+- Source code
+- Data files
+
+---
+
+## Server Deployment
+
+### For Assignment
+
+```bash
+# Upload to server
+scp -r . user@server:~/project/
+
+# Run on server
+ssh user@server
+cd ~/project
+python run_assignment.py
+scp user@server:~/project/CA6000_Assignment_Report.md .
+```
+
+### For Personal Project
+
+```bash
+# Run experiments in background
+nohup python run_personal_project.py > experiments.log 2>&1 &
+
+# Monitor progress
+tail -f experiments.log
+
+# Download results
+scp user@server:~/project/data/bert_experiments_*.csv .
+```
 
 ---
 
 ## Key Takeaways
-- **Head-only training underfits** severely on this dataset, indicating the classifier head alone cannot adapt the pretrained representation sufficiently.
-- **Partial unfreezing** provides a large gain over head-only, showing that adapting the last layers helps capture task-specific signals.
-- **Full fine-tuning performs best**, and learning rate is a meaningful lever (3e-5 > 2e-5 in this setup).
+
+### From Assignment
+
+1. **Data Quality Matters** - Clean, consistent data is crucial
+2. **Baseline First** - LogReg provides surprisingly strong results
+3. **Progressive Complexity** - Start simple, add complexity only if needed
+4. **Evaluation Rigor** - Use multiple metrics, not just accuracy
+
+### From Personal Research
+
+1. **Full Fine-tuning > Frozen** - BERT benefits from end-to-end training
+2. **Learning Rate is Critical** - 3e-5 > 2e-5 for this task
+3. **Diminishing Returns** - More epochs don't always help
+4. **Pre-training Advantage** - Transfer learning provides huge boost
 
 ---
 
-## Repository Structure
+---
 
-```text
-.
-├── .claude/
-├── data/
-├── notebooks/
-│   ├── 05_error_analysis.ipynb
-│   └── 06_bert_error_analysis.ipynb
-├── src/
-│   ├── model/
-│   │   └── __init__.py
-│   ├── data_utils.py
-│   ├── evaluate.py
-│   ├── features.py
-│   ├── text_preprocess.py
-│   └── train_nn.py
-├── .gitignore
-├── BERT_IMPROVEMENTS.md
-├── CODE_REVIEW.md
-├── ISSUES_FOUND.md
-├── README.md
-├── environment.yml
-├── fix_environment.sh
-└── requirements.txt
+## Requirements
 
-Setup
-Option A — Conda
-conda env create -f environment.yml
-conda activate <your-env-name>
+**Core:**
+- Python 3.8+
+- PyTorch 2.0+
+- Transformers (HuggingFace)
+- Scikit-learn
+- Pandas, NumPy
 
-Option B — pip + venv
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+**For Assignment:**
+- No GPU required (uses pre-trained models)
+- ~8GB RAM
+- ~5 minutes runtime
 
+**For Personal Project:**
+- GPU strongly recommended (CUDA)
+- ~16GB RAM
+- ~2-3 hours for all experiments
 
-If you hit environment issues:
+See [requirements.txt](requirements.txt) for full dependencies.
 
-bash fix_environment.sh
+---
 
-How to Run
-1) Notebook workflow (recommended)
+## License
 
-This repository is notebook-driven for experimentation and analysis.
+This is an educational project for CA6000 coursework and personal learning.
 
-jupyter lab
-# or
-jupyter notebook
+---
 
+## Notes
 
-Suggested order:
+### Assignment Mode
+- ✅ Uses existing trained models (no GPU needed)
+- ✅ Generates markdown report automatically
+- ✅ Covers all CA6000 requirements
+- ✅ Ready for submission
 
-notebooks/05_error_analysis.ipynb — evaluation utilities + error analysis workflow
+### Personal Project Mode
+- ✅ Trains new models (GPU recommended)
+- ✅ Records experiments systematically
+- ✅ Doesn't save checkpoints (saves space)
+- ✅ Finds optimal hyperparameters
 
-notebooks/06_bert_error_analysis.ipynb — BERT fine-tuning focused error analysis
+---
 
-2) Script workflow (src/)
+**Happy learning! 🚀**
 
-If you prefer running scripts directly, the main entry points are:
-
-src/train_nn.py — training / fine-tuning
-
-src/evaluate.py — evaluation (metrics, confusion matrix, reports)
-
-Example (template — adjust arguments based on your implementation):
-
-python -m src.train_nn
-python -m src.evaluate
-
-
-If your scripts require arguments (model name, LR, epochs, etc.), check the docstrings or the top of each file and mirror the parameters used in the notebooks.
-
-Evaluation Artifacts (Recommended Outputs)
-
-For a resume-grade ML project, the following artifacts are typically included:
-
-Confusion Matrix (test)
-
-Classification report (per-class Precision / Recall / F1)
-
-Per-class F1 bar chart
-
-Error analysis: representative misclassified samples + failure mode summary
-
-These are commonly generated in notebooks/05_* and notebooks/06_*.
-
-Documentation Notes
-
-BERT_IMPROVEMENTS.md — experiment ideas, tuning notes, and improvement plan
-
-CODE_REVIEW.md — code review notes and refactor decisions
-
-ISSUES_FOUND.md — known issues/pitfalls and fixes
-
-
-
-
-
+**For Questions:**
+- Assignment: Review `CA6000_Assignment_Report.md` after running
+- Personal: Check `data/bert_experiments_summary_*.csv` for results
