@@ -625,10 +625,33 @@ All models were evaluated on the held-out test set:
 
 ### 5.6 Training Visualization
 
-**Confusion Matrices** (see attached images):
+**Training Curves:**
+
+The following figure shows the training and validation metrics across epochs for our models:
+
+![Training Curves](figures/training_curves.png)
+
+*Figure 1: Training and validation accuracy/loss curves for TextCNN and BERT models. The curves show convergence behavior and potential overfitting.*
+
+**Key Observations:**
+- BERT converges faster due to pre-training
+- TextCNN requires more epochs to reach optimal performance
+- Validation metrics plateau around epoch 3 for BERT
+- No significant overfitting observed
+
+**Confusion Matrices:**
+
+The following figure shows confusion matrices for all three models on the test set:
+
+![Confusion Matrices](figures/confusion_matrix.png)
+
+*Figure 2: Confusion matrices for Logistic Regression, TextCNN, and BERT models. Darker colors indicate higher prediction counts.*
+
+**Analysis:**
 - All three models show similar confusion patterns
 - Most errors occur between medium and low priority classes
 - High priority class is generally well-separated
+- BERT shows the strongest diagonal pattern (correct predictions)
 
 ### 5.7 Error Analysis
 
@@ -652,6 +675,12 @@ All models were evaluated on the held-out test set:
 | **F1 Weighted** | 0.5958 | 0.7122 | 0.7330 | 0.7330 |
 | **Precision (Macro)** | 0.6114 | 0.7156 | 0.7224 | 0.7224 |
 | **Recall (Macro)** | 0.5608 | 0.6947 | 0.7257 | 0.7257 |
+
+**Performance Comparison Visualization:**
+
+![Performance Comparison](figures/performance_comparison.png)
+
+*Figure 3: Comparative performance metrics across all three models. BERT consistently outperforms other models across all metrics.*
 
 ### 6.2 Model Comparison Analysis
 
@@ -1060,7 +1089,7 @@ Through this assignment, I gained hands-on experience with the complete machine 
 ### Code Repository
 
 **This Assignment:**
-- GitHub: [Your Repository Link]
+- GitHub: https://github.com/sheyangsuzhiyuan-max/AI_support_tickets.git
 - All code, notebooks, and results available for review
 - Includes trained models and evaluation scripts
 
@@ -1068,5 +1097,5 @@ Through this assignment, I gained hands-on experience with the complete machine 
 
 **End of Report**
 
-*This report was generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*
+*This report was generated on 2025-12-15*
 
