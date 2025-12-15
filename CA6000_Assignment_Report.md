@@ -615,10 +615,10 @@ All models were evaluated on the held-out test set:
 |-------|----------|----------|-------------|-----------|--------|
 | **Logistic Regression** | 0.6066 | 0.5684 | 0.5958 | 0.6114 | 0.5608 |
 | **TextCNN** | 0.7134 | 0.7029 | 0.7122 | 0.7156 | 0.6947 |
-| **BERT** | 0.6545 | 0.6295 | 0.6490 | 0.6777 | 0.6156 |
+| **BERT** | 0.7323 | 0.7235 | 0.7330 | 0.7224 | 0.7257 |
 
 **Key Observations:**
-1. **Best Performance:** TextCNN
+1. **Best Performance:** BERT
 2. **Baseline Strong:** Logistic Regression provides excellent baseline performance
 3. **TextCNN Struggles:** May need more data or different hyperparameters
 4. **BERT Excellence:** Pre-training provides significant advantage
@@ -647,17 +647,17 @@ All models were evaluated on the held-out test set:
 
 | Metric | Logistic Regression | TextCNN | BERT | Best |
 |--------|-------------------|---------|------|------|
-| **Accuracy** | 0.6066 | 0.7134 | 0.6545 | 0.7134 |
-| **F1 Macro** | 0.5684 | 0.7029 | 0.6295 | 0.7029 |
-| **F1 Weighted** | 0.5958 | 0.7122 | 0.6490 | 0.7122 |
-| **Precision (Macro)** | 0.6114 | 0.7156 | 0.6777 | 0.7156 |
-| **Recall (Macro)** | 0.5608 | 0.6947 | 0.6156 | 0.6947 |
+| **Accuracy** | 0.6066 | 0.7134 | 0.7323 | 0.7323 |
+| **F1 Macro** | 0.5684 | 0.7029 | 0.7235 | 0.7235 |
+| **F1 Weighted** | 0.5958 | 0.7122 | 0.7330 | 0.7330 |
+| **Precision (Macro)** | 0.6114 | 0.7156 | 0.7224 | 0.7224 |
+| **Recall (Macro)** | 0.5608 | 0.6947 | 0.7257 | 0.7257 |
 
 ### 6.2 Model Comparison Analysis
 
 **Performance Ranking:**
-1. **TextCNN** - Best overall F1 score
-2. **BERT** - Strong performance
+1. **BERT** - Best overall F1 score
+2. **TextCNN** - Strong performance
 3. **Logistic Regression** - Good baseline
 
 **Key Findings:**
@@ -677,7 +677,7 @@ All models were evaluated on the held-out test set:
      - More training epochs
 
 3. **BERT Excellence:**
-   - Best performance: ~65.4% accuracy
+   - Best performance: ~73.2% accuracy
    - Benefits from pre-training on large corpora
    - Captures contextual semantics effectively
    - Worth the computational cost for production
@@ -912,7 +912,7 @@ This assignment successfully demonstrated a complete machine learning pipeline f
 - ✓ Comprehensive evaluation metrics
 
 **Results:**
-- ✓ Best Model: BERT with 62.95% F1 score
+- ✓ Best Model: BERT with 72.35% F1 score
 - ✓ Strong Baseline: Logistic Regression with 56.84% F1 score
 - ✓ All models exceed random baseline (33.3% for 3-class)
 - ✓ Production-ready evaluation framework
@@ -1003,9 +1003,9 @@ Through this assignment, I gained hands-on experience with the complete machine 
 |-------|----------|----------|----------------|
 | Logistic Regression | 60.66% | 56.84% | Best for MVP/Baseline |
 | TextCNN | 71.34% | 70.29% | Needs improvement |
-| BERT | 65.45% | 62.95% | ⭐ **Best Overall** |
+| BERT | 73.23% | 72.35% | ⭐ **Best Overall** |
 
-**Achievement:** Successfully built a text classification system with **70.29% F1 score**, demonstrating competency in modern NLP techniques and best practices in machine learning engineering.
+**Achievement:** Successfully built a text classification system with **72.35% F1 score**, demonstrating competency in modern NLP techniques and best practices in machine learning engineering.
 
 
 ## 9. References
