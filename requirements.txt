@@ -15,3 +15,4 @@ transformers
 accelerate
 tqdm
 pyyaml
+tabulate
