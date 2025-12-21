@@ -32,9 +32,9 @@ CA6000 Advanced Data Analytics Assignment
 
 &nbsp;
 
-**Group XX:**
+**Prepared by:**
 
-[Your Name]&emsp;&emsp;&emsp;&emsp;[Partner Name]
+Su Zhiyuan&emsp;&emsp;&emsp;&emsp;Tuo Xueting
 
 &nbsp;
 
