@@ -3,9 +3,9 @@
 One-click BERT fine-tuning experiments script
 
 Usage:
-    python run_personal_project.py                    # Run all experiments
-    python run_personal_project.py --quick            # Quick test (1 epoch)
-    python run_personal_project.py --exp EXP1 EXP2   # Run specific experiments
+    python run_bert_finetuning.py                    # Run all experiments
+    python run_bert_finetuning.py --quick            # Quick test (1 epoch)
+    python run_bert_finetuning.py --exp EXP1 EXP2   # Run specific experiments
 """
 
 import os

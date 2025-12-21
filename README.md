@@ -4,7 +4,7 @@ This NLP project classifies customer support tickets into **3 priority classes**
 
 **Two Project Modes:**
 1. **📚 CA6000 Assignment** - Complete report generation for coursework
-2. **🔬 Personal Research** - BERT fine-tuning experiments
+2. **🔬 BERT Fine-tuning** - Hyperparameter experiments
 
 ---
 
@@ -88,22 +88,22 @@ Per CA6000 specification:
 
 ---
 
-## 🔬 Personal Research Mode
+## 🔬 BERT Fine-tuning Mode
 
 ### Purpose
 Explore BERT fine-tuning hyperparameters for optimal performance.
 
-### Run Personal Project
+### Run BERT Fine-tuning
 
 ```bash
 # Run all BERT fine-tuning experiments
-python run_personal_project.py
+python run_bert_finetuning.py
 
 # Quick test (1 epoch)
-python run_personal_project.py --quick
+python run_bert_finetuning.py --quick
 
 # Run specific experiments only
-python run_personal_project.py --exp EXP1 EXP2
+python run_bert_finetuning.py --exp EXP1 EXP2
 ```
 
 ### Experiment Configurations
@@ -137,15 +137,14 @@ python run_personal_project.py --exp EXP1 EXP2
 ```
 .
 ├── run_assignment.py              # 📚 CA6000 Assignment entry point
-├── run_personal_project.py        # 🔬 Personal research entry point
+├── run_bert_finetuning.py         # 🔬 BERT fine-tuning entry point
 │
 ├── notebooks/
 │   ├── 01_eda.ipynb               # Exploratory data analysis
 │   ├── 02_baseline_ml.ipynb       # Logistic regression baseline
 │   ├── 03_cnn_model.ipynb         # TextCNN model
 │   ├── 04_bert_model.ipynb        # BERT training (for assignment)
-│   ├── 05_error_analysis.ipynb    # Multi-model comparison (for assignment)
-│   └── 06_bert_finetuning.ipynb   # BERT experiments (personal research)
+│   └── 05_bert_finetuning.ipynb   # BERT fine-tuning experiments
 │
 ├── src/
 │   ├── model/
@@ -187,7 +186,7 @@ python run_personal_project.py --exp EXP1 EXP2
 - Documents all required sections
 - Ready for submission
 
-**Research Mode (`run_personal_project.py`):**
+**BERT Fine-tuning Mode (`run_bert_finetuning.py`):**
 - Runs systematic BERT experiments
 - Compares different hyperparameters
 - Records results without saving models
@@ -212,7 +211,7 @@ python run_personal_project.py --exp EXP1 EXP2
 | TextCNN | ~61% | ~55% | ~58% | Needs tuning |
 | BERT (DistilBERT) | **~75-77%** | **~75-76%** | **~76%** | Best overall |
 
-### Personal Project Results (Validation Set)
+### BERT Fine-tuning Results (Validation Set)
 
 | Exp | Config | Val Acc | Val F1 | Notes |
 |-----|--------|---------|--------|-------|
@@ -242,30 +241,27 @@ pandoc CA6000_Assignment_Report.md -o CA6000_Report.pdf
 # 4. Submit report + code
 ```
 
-### For Personal Research
+### For BERT Fine-tuning
 
 ```bash
 # On server with GPU
-python run_personal_project.py
+python run_bert_finetuning.py
 
 # Check results
 cat data/bert_experiments_summary_*.csv
 
 # Run more experiments with best LR
-python run_personal_project.py --exp EXP2 EXP5
+python run_bert_finetuning.py --exp EXP2 EXP5
 ```
 
 ### For Interactive Exploration
 
 ```bash
-# Jupyter notebook for assignment (model comparison)
-jupyter notebook notebooks/05_error_analysis.ipynb
-
 # Jupyter notebook for assignment (BERT training)
 jupyter notebook notebooks/04_bert_model.ipynb
 
-# Jupyter notebook for personal project (BERT experiments)
-jupyter notebook notebooks/06_bert_finetuning.ipynb
+# Jupyter notebook for BERT fine-tuning experiments
+jupyter notebook notebooks/05_bert_finetuning.ipynb
 ```
 
 ---
@@ -311,11 +307,11 @@ scp user@server:~/project/CA6000_Assignment_Report.md .
 
 **Note:** First run will take ~40 minutes to train all models automatically.
 
-### For Personal Project
+### For BERT Fine-tuning
 
 ```bash
 # Run experiments in background
-nohup python run_personal_project.py > experiments.log 2>&1 &
+nohup python run_bert_finetuning.py > experiments.log 2>&1 &
 
 # Monitor progress
 tail -f experiments.log
@@ -335,7 +331,7 @@ scp user@server:~/project/data/bert_experiments_*.csv .
 3. **Progressive Complexity** - Start simple, add complexity only if needed
 4. **Evaluation Rigor** - Use multiple metrics, not just accuracy
 
-### From Personal Research
+### From BERT Fine-tuning
 
 1. **Full Fine-tuning > Frozen** - BERT benefits from end-to-end training
 2. **Learning Rate is Critical** - 3e-5 > 2e-5 for this task
@@ -360,7 +356,7 @@ scp user@server:~/project/data/bert_experiments_*.csv .
 - ~8GB RAM
 - ~5 minutes runtime
 
-**For Personal Project:**
+**For BERT Fine-tuning:**
 - GPU strongly recommended (CUDA)
 - ~16GB RAM
 - ~2-3 hours for all experiments
@@ -371,7 +367,7 @@ See [requirements.txt](requirements.txt) for full dependencies.
 
 ## License
 
-This is an educational project for CA6000 coursework and personal learning.
+This is an educational project for CA6000 coursework.
 
 ---
 
@@ -383,7 +379,7 @@ This is an educational project for CA6000 coursework and personal learning.
 - ✅ Covers all CA6000 requirements
 - ✅ Ready for submission
 
-### Personal Project Mode
+### BERT Fine-tuning Mode
 - ✅ Trains new models (GPU recommended)
 - ✅ Records experiments systematically
 - ✅ Doesn't save checkpoints (saves space)
@@ -395,4 +391,4 @@ This is an educational project for CA6000 coursework and personal learning.
 
 **For Questions:**
 - Assignment: Review `CA6000_Assignment_Report.md` after running
-- Personal: Check `data/bert_experiments_summary_*.csv` for results
+- BERT Fine-tuning: Check `data/bert_experiments_summary_*.csv` for results
