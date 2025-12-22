@@ -54,16 +54,17 @@ Su Zhiyuan&emsp;&emsp;&emsp;&emsp;Tuo Xueting
 
 ### 1.1 Background & Motivation
 
-We chose customer support ticket classification for this project because it's something we can relate to - we've all waited too long for a response to an urgent issue. Companies receive thousands of support tickets daily, and manually sorting them by priority is time-consuming and inconsistent. The idea here is to use machine learning to automatically classify tickets as high, medium, or low priority, which could help support teams respond to critical issues faster.
+In today's companies, the operations department receives hundreds or even thousands of support tickets every day. However, these support tickets have different priorities, and employees need to classify and sort them before sending them to the appropriate departments for processing, which is extremely inefficient. A faster processing method could significantly reduce the time spent in this process.
 
-We were curious whether modern NLP models would work well on this kind of text. Support tickets are tricky - they're often informal, sometimes vague, and the line between "medium" and "low" priority can be pretty subjective even for humans.
+Whether training a natural language processing model can efficiently handle this problem is the key to our exploration. Priority discrimination is often unclear; even for humans, judging medium and low priority is highly subjective.
 
 ### 1.2 What We Set Out to Do
 
-Our goal was to compare different approaches to see what works best for this problem:
-- Start with a simple baseline (TF-IDF + Logistic Regression) to establish a reference point
-- Try a neural network approach with TextCNN
-- Use a pre-trained transformer model (DistilBERT) to see if transfer learning helps
+Our goal is to compare and select the best among different neural network models to solve this problem：
+
+- For the first model, we choose a baseline model to use as a reference. (TF-IDF + logistic regression).
+- Attempt to use the neural network approach of TextCNN.
+- Use a pre-trained Transformer model (DistilBERT) to test the effectiveness of transfer learning.
 
 We wanted to understand the trade-offs between these approaches - not just accuracy, but also training time and practicality.
 
@@ -73,17 +74,18 @@ We wanted to understand the trade-offs between these approaches - not just accur
 
 ### 2.1 Task Description
 
-This is a 3-class text classification problem. Given a support ticket (text), the model needs to predict whether it's high, medium, or low priority. We're treating it as a standard supervised learning task with the dataset labels as ground truth.
+For this project, which is a typical supervised learning task, the model we selected was trained to predict priorities by analyzing the work order text: classifying them into three priorities: low, medium, and high.
 
-For evaluation, we're using both accuracy and macro-F1 score. Accuracy alone can be misleading if the classes are imbalanced, so macro-F1 gives a better picture of how well the model handles each class.
+For the evaluation method, we chose to use both accuracy and macro F1 score. In order to deal with class imbalance, using only accuracy may be misleading; in this case, macro F1 score can better reflect the model's ability to handle each class.
 
 ### 2.2 Constraints and Assumptions
 
-A few things to keep in mind about this setup:
-- The dataset is synthetic, so it might not capture all the messiness of real support tickets
-- All tickets are in English
-- We used DistilBERT instead of full BERT because of GPU memory constraints on our machine
-- The class distribution isn't perfectly balanced (more on this later), which is why we're reporting per-class metrics
+Several points regarding the project setup are worth mentioning:
+
+- The authors have indicated that the dataset is synthetic and may not contain real work order information;
+- This project only considers English work orders;
+- Considering the limited GPU memory constraints, DistilBERT is used instead of the full BERT;
+- The dataset has an uneven distribution of categories (we'll discuss this later), so we need to discuss the metrics for each category.
 
 ---
 
@@ -91,13 +93,13 @@ A few things to keep in mind about this setup:
 
 ### 3.1 Where the Data Comes From
 
-We used the "customer-support-tickets" dataset from Hugging Face (uploaded by Tobi-Bueck). It contains synthetic customer support tickets covering domains like software, healthcare, financial services, and infrastructure. Each ticket has a subject, body text, and priority label.
+The dataset we used, called "customer-support-tickets," is taken from Hugging Face (by Tobi-Bueck). It contains customer support tickets from various industries, including software, healthcare, financial services, and infrastructure. Each ticket has a subject, body, and priority tags.
 
-We filtered to keep only English tickets and combined subject + body into a single text field.
+We filtered the dataset to include only tickets in English and combined the subject and body columns into a single text field.
 
 ### 3.2 Dataset Size and Split
 
-After cleaning, we ended up with 28,261 samples total. We split them 70/15/15:
+After data cleaning, there are 28,261 samples in total. And we split them into 70/15/15:
 
 | Split | Samples |
 |-------|---------|
@@ -109,17 +111,14 @@ We used stratified splitting to maintain similar class distributions across all 
 
 ### 3.3 Data Format
 
-The processed data is stored as CSV files with these columns:
-- `text`: combined subject and body
-- `priority`: the label (high/medium/low)
-- `cleaned_text`: preprocessed version for modeling
+The processed data is stored as CSV files with these columns: firstly， `text` is the combination of subject and boy; then `priority` is the label for the text; and also `cleaned_text` is the text we preprocessed for modeling
 
 ### 3.4 How We Cleaned the Data
 
-We wrote a simple cleaning function that:
-- Converts everything to lowercase
-- Removes URLs and email addresses (they don't help with classification)
-- Normalizes whitespace
+We created a simple cleaning function that cleaned the dataset as follow: 
+1. Converts all the text content to lowercase.
+2. Removes URLs and email addresses which is not useful for classification.
+3. Normalizes whitespace.
 
 ```python
 def basic_clean(text):
@@ -150,34 +149,30 @@ Here's the class distribution in the training set:
 | Medium | 8,041 | 40.6% |
 | Low | 4,043 | 20.4% |
 
-So there's some imbalance - "low" priority has about half the samples of the other classes. This is actually realistic for support tickets (people tend to think their issues are more urgent than they are).
+We can see that there's some imbalance: "low" priority has about almost half the samples of the other classes. This does also make sense for support tickets since people tend to think their issues are more urgent than others.
 
 Text length stats:
 - Average: ~411 characters / ~60 words
 - Range: 16 to 1,715 characters
 - Most tickets are between 200-600 characters
 
-One thing we noticed: text length doesn't really correlate with priority. We initially thought maybe longer tickets would be lower priority (more detail = less urgent?), but that's not the case here.
-
 ---
 
 ## 4. Why We Chose These Models
 
-We went with a "start simple, then add complexity" approach.
+We adopted a "start with the simple and then gradually increase the complexity" approach.
 
 ### 4.1 Baseline: TF-IDF + Logistic Regression
 
-We started here because it's fast and gives you a reasonable baseline. TF-IDF turns text into numerical features based on word frequencies, and logistic regression finds a linear decision boundary.
+We chose this method because it is fast and provides a reasonable benchmark. TF-IDF converts text into numerical features based on word frequency, and then logistic regression finds a linear decision boundary.
 
-The main limitation is that it treats text as a "bag of words" - word order doesn't matter. "Not good" and "good not" would look the same to this model.
+Its main limitation is that it treats text as a "bag of words"—word order is irrelevant. "Bad" and "good or bad" are treated the same in this model.
 
-Settings we used:
-- TF-IDF with max 10,000 features, including bigrams
-- Logistic regression with balanced class weights
+Our settings for TF-IDF are up to 10,000 features, including bigrams using logistic regression, class weighted
 
 ### 4.2 TextCNN
 
-This was our first neural network attempt. TextCNN uses convolutional filters to capture local patterns (like n-grams) in the text. The idea is that certain word combinations might signal priority level.
+This is our first attempt to use a neural network. TextCNN uses convolutional filters to capture local patterns (such as n-grams) in text. The basic idea is that certain word combinations may represent priorities.
 
 Architecture:
 - Embedding layer (128 dimensions)
@@ -185,25 +180,25 @@ Architecture:
 - Max pooling, then concatenation
 - Dropout (0.5) and final classification layer
 
-We trained it for 5 epochs with Adam optimizer. One thing we learned: TextCNN really benefits from pre-trained embeddings, which we didn't use here. That probably hurt its performance.
+We trained the program for 5 epochs using the Adam optimizer. We found that TextCNN benefits greatly from pre-trained word embeddings, which we didn't use here. This likely impacted its performance.
 
 ### 4.3 DistilBERT
 
-Finally, we tried fine-tuning DistilBERT. It's a smaller version of BERT that's been pre-trained on a huge amount of text, so it already "understands" language to some degree.
+Finally, we attempted to fine-tune DistilBERT. It's a streamlined version of BERT, pre-trained on massive amounts of text, and therefore already possesses some language understanding capabilities.
 
-We just added a classification head on top and fine-tuned the whole thing for 3 epochs. The learning rate is much smaller (2e-5) because you don't want to destroy the pre-trained knowledge.
+We simply added a classification head and fine-tuned the entire model for 3 epochs. The learning rate was much smaller (2e-5) because we didn't want to break the pre-trained knowledge.
 
-Training took about 30 minutes on our GPU, compared to under a minute for logistic regression.
+On our GPU, training took approximately 30 minutes, while logistic regression took less than 1 minute.
 
 ### 4.4 Other Things We Could Have Tried
 
-Looking back, there are some alternatives we didn't explore:
-- SVM or Naive Bayes as additional baselines
-- Using pre-trained word embeddings (GloVe, Word2Vec) for TextCNN
-- Larger models like BERT-base or RoBERTa
-- Handling class imbalance more explicitly (oversampling, focal loss)
+Looking back, there are also some alternatives which we didn't explore for this project:
+1. Using SVM or Naive Bayes model as optional baselines
+2. Using a pre-trained word embeddings model like Word2Vec for TextCNN
+3. Larger models like BERT-base or RoBERTa
+4. Handling class imbalance more explicitly (oversampling, focal loss)
 
-Maybe for future work.
+All these can be futher explored for future work.
 
 ---
 
@@ -211,42 +206,43 @@ Maybe for future work.
 
 ### 5.1 Overall Pipeline
 
-Our workflow was pretty standard:
-1. Load raw data, filter to English, clean text
-2. Split into train/val/test (70/15/15, stratified)
-3. For each model: prepare inputs, train, evaluate
-4. Compare results on the held-out test set
+Our workflow is fairly standard:
 
-All three models used the exact same data splits and cleaned text, so the comparison is fair.
+1. Load raw data, filter the data for only English, and clean the text.
+2. Split the dataset into training/validation/test sets (70/15/15, stratified sampling).
+3. For each model: prepare input, train, and evaluate.
+4. Compare results on the reserved test set.
+
+All three models used the exact same data segmentation and cleaned text, so the comparison is fair.
 
 ### 5.2 Training Details
 
 **Logistic Regression:**
-- Straightforward sklearn fit/predict
-- Used class_weight='balanced' to handle imbalance
+- Simple sklearn fit/predict operations
+- Handle imbalanced data using class_weight='balanced'
 - Training takes less than a minute
 
 **TextCNN:**
-- Built vocabulary from training data (all words that appear at least once)
-- Padded/truncated sequences to length 256
-- Batch size 64, 5 epochs
-- Used weighted cross-entropy loss
+- Build a vocabulary from the training data (all words that appear at least once)
+- Pad/truncate sequences to a length of 256
+- Batch size: 64, Training epochs: 5
+- Use weighted cross-entropy loss function
 
 **DistilBERT:**
-- Max sequence length 128 (tickets are usually short enough)
+- Maximum sequence length 128 (work orders are usually short enough)
 - Batch size 32, 3 epochs
-- AdamW optimizer with learning rate 2e-5
-- Linear learning rate warmup
+- AdamW optimizer, learning rate 2e-5
 
 ### 5.3 What We Measured
 
-For evaluation, we computed:
-- Accuracy (overall)
-- Precision, recall, F1 for each class
-- Macro-averaged F1 (treats all classes equally)
-- Confusion matrix (to see where mistakes happen)
+For evaluation, we calculated the following metrics:
 
-We focused on macro-F1 as the main metric because accuracy can be inflated by just predicting the majority class.
+- Overall accuracy
+- Precision, recall, and F1 score for each class
+- Macro-average F1 score (treating all classes equally)
+- Confusion matrix (used to analyze the location of errors)
+
+We primarily focus on the macro-average F1 score because predicting only the majority of classes might artificially inflate accuracy.
 
 ---
 
@@ -254,25 +250,26 @@ We focused on macro-F1 as the main metric because accuracy can be inflated by ju
 
 ### 6.1 Code Organization
 
-We structured the project with separate notebooks for each model:
-- `01_eda.ipynb` - data exploration
-- `02_baseline_ml.ipynb` - logistic regression
-- `03_cnn_model.ipynb` - TextCNN
-- `04_bert_model.ipynb` - DistilBERT fine-tuning
+We created separate notebooks for each model to build the project:
 
-Shared code (data loading, preprocessing, evaluation) is in the `src/` folder.
+- `01_eda.ipynb` - Data Exploration Analysis
+- `02_baseline_ml.ipynb` - Logistic Regression Model
+- `03_cnn_model.ipynb` - TextCNN Model
+- `04_bert_model.ipynb` - DistilBERT Model
+
+Shared code (data loading, preprocessing, evaluation) is located in the `src/` folder.
 
 ### 6.2 Some Issues We Ran Into
 
-**CUDA memory errors with BERT:** At first we tried batch size 64, but our GPU kept running out of memory. Had to reduce to 32.
+**CUDA memory errors with BERT:** Firstly we used batch size of 64, but our GPU kept running out of memory. So we had to reduce the batch size to 32.
 
-**TextCNN underfitting:** Our initial TextCNN wasn't learning much. Turned out we had the embedding dimension too small (was 50, changed to 128) and needed more filters.
+**TextCNN underfitting:** Our initial TextCNN was not learning a lot. It turned out we had the embedding dimension too small which was 50, and we changed it to 128 and needed more filters.
 
-**Class imbalance:** The "low" class kept getting worse predictions. Adding class weights to the loss function helped somewhat.
+**Class imbalance:** The "low" class kept having worse predictions than others. So we added class weights to the loss function helped on some aspects.
 
 ### 6.3 Reproducibility
 
-We set random seeds where possible and saved all trained models. The notebooks should be runnable end-to-end, assuming you have the data in the right place.
+We set random seeds as far as possible and saved all trained models. Assuming the data is in the correct location, these notebooks should run successfully.
 
 ---
 
@@ -280,7 +277,7 @@ We set random seeds where possible and saved all trained models. The notebooks s
 
 ### 7.1 Test Set Performance
 
-Here's how the three models compared on the held-out test set:
+The following table shows the prediction results of these three models on the test set:
 
 | Model | Accuracy | Macro F1 | Training Time |
 |-------|----------|----------|---------------|
@@ -288,7 +285,7 @@ Here's how the three models compared on the held-out test set:
 | TextCNN | 60.4% | 59.3% | ~10 min |
 | DistilBERT | **73.2%** | **72.4%** | ~30 min |
 
-So DistilBERT wins pretty clearly. What surprised us was that TextCNN actually did worse than logistic regression on this dataset - we'll discuss why below.
+Therefore, DistilBERT clearly wins. However, to our surprise, TextCNN's actual evaluation results on this dataset are worse than those of logistic regression—we will try to explore the reasons below.
 
 ### 7.2 Per-Class Breakdown
 
@@ -319,23 +316,23 @@ So DistilBERT wins pretty clearly. What surprised us was that TextCNN actually d
    macro avg       0.71      0.73      0.72      4240
 ```
 
-DistilBERT is clearly more balanced - it doesn't sacrifice one class to do well on others.
+DistilBERT is clearly more balanced—it doesn't sacrifice other aspects to excel in one class.
 
 ### 7.3 Where Models Go Wrong
 
-Looking at the confusion matrices, the main issue across all models is confusion between "medium" and "low" priority. This makes sense - the boundary between these two is fuzzy even for humans.
+The confusion matrix reveals that the main problem with all models lies in the correctness of prioritizing "medium" or "low." This is quite reasonable, as even for humans, there isn't a clear boundary between the two.
 
-"High" priority is easier to identify, probably because urgent tickets use more distinctive language (words like "critical", "down", "urgent", "ASAP").
+"High" priority is easier to identify, likely because customers use more urgent language (e.g., "critical," "fault," "urgent," "as soon as possible") in most urgent work orders.
 
 ### 7.4 Why TextCNN Underperformed
 
-We were surprised that TextCNN did worse than the baseline. A few possible reasons:
+We were surprised that the TextCNN model performed worse than the first baseline model. This may be due to the following reasons:
 
-1. **No pre-trained embeddings:** We trained embeddings from scratch, which doesn't work great with ~20k training samples
-2. **Dataset might be too clean:** Synthetic data often lacks the noise and variety of real text, which neural networks need to generalize
-3. **Hyperparameter tuning:** We didn't do extensive tuning; there's probably a better configuration
+1. **No pre-trained embeddings:** We trained the word embeddings from scratch, but this method did not perform well with about 20,000 training samples.
+2. **Dataset might be too clean:** Synthetic data often lacks the noise and diversity found in real text, which neural networks need to generalize.
+3. **Hyperparameter tuning:** We haven't done extensive tuning of the model; there are likely better configuration options available.
 
-If we had more time, we'd try initializing with GloVe embeddings and doing a proper hyperparameter search.
+If we had more time, we would try initializing it using GloVe word embeddings and performing a more comprehensive and diverse hyperparameter search.
 
 ---
 
@@ -343,38 +340,39 @@ If we had more time, we'd try initializing with GloVe embeddings and doing a pro
 
 ### 8.1 What We Learned
 
-The biggest takeaway is that pre-training matters a lot for NLP. DistilBERT, despite being used almost out-of-the-box, beat both other approaches significantly. It's already seen so much text during pre-training that fine-tuning on 20k examples is enough.
+The most important conclusion is that pre-training remains crucial for natural language processing models. While DistilBERT is used almost directly, its performance evaluation significantly outperforms the other two methods. It has already been exposed to a large amount of text during pre-training, so only fine-tuning is needed on these 20,000 samples.
 
-On the other hand, the simple TF-IDF + logistic regression baseline held up surprisingly well. If you need something quick and interpretable, it's not a bad choice.
+Meanwhile, the simple TF-IDF + logistic regression baseline model performed surprisingly well. It is also a good choice if a fast and easily interpretable model is needed for this project.
 
 ### 8.2 Practical Considerations
 
 If we were deploying this for a real company:
-- **For a quick prototype:** Logistic regression. It's fast, explainable, and decent accuracy.
-- **For best accuracy:** DistilBERT. The 30-minute training time is fine if you're not retraining constantly.
-- **For edge deployment:** Might need to distill the BERT model further or use something lighter.
-
+- **For a quick prototype:** Logistic regression model. It is fast, highly interpretable, and its accuracy is not bad.
+- **For best accuracy:** For DistilBERT， if you don't do repetitive training often, 30 minutes of training time is sufficient.
+- **For edge deployment:** Further simplification of the BERT model or the use of a lighter model may be necessary in the future.
 ### 8.3 Limitations
 
-Some things that could affect how well these results generalize:
-- Synthetic data isn't quite the same as real tickets
-- We only tried one random seed for the data split
-- Hyperparameter tuning was minimal
-- Didn't try any ensemble methods
+The following factors may affect the generalizability of the results:
+
+- The synthetic data is not entirely identical to real ticketing data.
+- We only tried one random seed for data partitioning.
+- The hyperparameter tuning was relatively low.
+- No ensemble methods were attempted.
 
 ### 8.4 What We'd Do Differently
 
-With more time, we would:
-- Try pre-trained embeddings for TextCNN
-- Do k-fold cross-validation instead of a single split
-- Experiment with data augmentation (paraphrasing, back-translation)
-- Maybe try an ensemble of logistic regression + BERT
+If we have more time, we can:
+
+- Try training TextCNN using pre-trained text embeddings
+- Use k-fold cross-validation instead of single-segmentation
+- Try data augmentation (paraphrasing, back-translation)
+- Perhaps try an ensemble model of logistic regression + BERT
 
 ---
 
 ## 9. Conclusion
 
-We built a ticket classification system and compared three approaches. The main findings:
+We built a ticketing classification system and compared three methods. The main findings are as follows:
 
 **Performance ranking:**
 1. DistilBERT: 73.2% accuracy, 72.4% macro-F1
@@ -386,7 +384,7 @@ We built a ticket classification system and compared three approaches. The main 
 - Simple baselines can be surprisingly competitive and shouldn't be skipped
 - The medium/low priority boundary is inherently difficult - might need better labeling guidelines or additional features
 
-For this particular task, we'd recommend DistilBERT if accuracy is important, or logistic regression if you need speed and interpretability.
+For this specific task, if accuracy is important, we recommend using DistilBERT; if speed and interpretability are required, we recommend using logistic regression.
 
 ---
 
