@@ -21,7 +21,7 @@ echo ""
 
 # 1. 复制配置文件
 echo "[1/4] 复制配置文件到 LlamaFactory..."
-cp $PROJECT_ROOT/configs/qwen2_7b_lora_*.yaml $LLAMAFACTORY_ROOT/configs/
+cp $PROJECT_ROOT/configs/qwen2_7b_lora_*.yaml $LLAMAFACTORY_ROOT/examples/train_lora/
 cp $PROJECT_ROOT/configs/dataset_info.json $LLAMAFACTORY_ROOT/data/
 echo "✓ 配置文件复制完成（3个实验配置）"
 
@@ -37,7 +37,7 @@ echo "✓ 数据链接创建完成"
 # 3. 更新配置文件中的模型路径
 echo ""
 echo "[3/4] 更新配置文件中的模型路径..."
-for config in $LLAMAFACTORY_ROOT/configs/qwen2_7b_lora_*.yaml; do
+for config in $LLAMAFACTORY_ROOT/examples/train_lora/qwen2_7b_lora_*.yaml; do
     sed -i "s|model_name_or_path:.*|model_name_or_path: $MODEL_PATH|" $config
     echo "  更新: $(basename $config)"
 done

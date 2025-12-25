@@ -42,11 +42,11 @@ for exp in "${experiments[@]}"; do
     echo "训练: $exp"
     echo "────────────────────────────────────────"
 
-    if [ -f "configs/${exp}.yaml" ]; then
-        llamafactory-cli train configs/${exp}.yaml
+    if [ -f "examples/train_lora/${exp}.yaml" ]; then
+        llamafactory-cli train examples/train_lora/${exp}.yaml
         echo "✓ 完成: $exp"
     else
-        echo "⚠️  配置文件不存在: configs/${exp}.yaml"
+        echo "⚠️  配置文件不存在: examples/train_lora/${exp}.yaml"
     fi
     echo ""
 done
