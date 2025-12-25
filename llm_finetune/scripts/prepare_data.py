@@ -252,7 +252,7 @@ def create_dataset_info(output_dir: Path, task_type: str):
 def main():
     parser = argparse.ArgumentParser(description='Prepare data for LlamaFactory')
     parser.add_argument('--data_dir', type=str,
-                        default='../data/processed',
+                        default='../../data/processed',
                         help='Directory containing train/val/test CSV files')
     parser.add_argument('--output_dir', type=str,
                         default='../data',

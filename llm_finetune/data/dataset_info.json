@@ -1,0 +1,14 @@
+{
+  "ticket_multi_task_train": {
+    "file_name": "alpaca_multi_task_train.json",
+    "formatting": "alpaca"
+  },
+  "ticket_multi_task_val": {
+    "file_name": "alpaca_multi_task_val.json",
+    "formatting": "alpaca"
+  },
+  "ticket_multi_task_test": {
+    "file_name": "alpaca_multi_task_test.json",
+    "formatting": "alpaca"
+  }
+}
