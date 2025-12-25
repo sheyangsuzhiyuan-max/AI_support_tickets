@@ -33,20 +33,15 @@ mkdir -p ${WORK_DIR}/models
 echo -e "${GREEN}✓ 目录检查完成${NC}"
 
 # 3. 检查 Conda
-echo -e "\n${YELLOW}[3/8] 检查 Conda 安装...${NC}"
-if command -v conda &> /dev/null; then
-    echo -e "${GREEN}✓ Conda 已安装: $(conda --version)${NC}"
-else
-    echo -e "${YELLOW}→ 正在安装 Miniconda...${NC}"
-    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh
-    bash /tmp/miniconda.sh -b -p $HOME/miniconda3
-    ~/miniconda3/bin/conda init bash
-    source ~/.bashrc
-    echo -e "${GREEN}✓ Miniconda 安装完成${NC}"
+echo -e "\n${YELLOW}[3/6] 检查 Conda...${NC}"
+if ! command -v conda &> /dev/null; then
+    echo -e "${RED}✗ 未找到 Conda，请先安装 Conda${NC}"
+    exit 1
 fi
+echo -e "${GREEN}✓ Conda 已安装: $(conda --version)${NC}"
 
 # 4. 创建虚拟环境
-echo -e "\n${YELLOW}[4/8] 创建 Python 环境...${NC}"
+echo -e "\n${YELLOW}[4/6] 创建 Python 环境...${NC}"
 if conda env list | grep -q "llm_finetune"; then
     echo -e "${YELLOW}→ 环境已存在，跳过创建${NC}"
 else
@@ -55,8 +50,9 @@ else
 fi
 
 # 5. 激活环境并安装 PyTorch
-echo -e "\n${YELLOW}[5/8] 安装 PyTorch (CUDA 12.1)...${NC}"
-source ~/miniconda3/etc/profile.d/conda.sh
+echo -e "\n${YELLOW}[5/6] 安装 PyTorch (CUDA 12.1)...${NC}"
+CONDA_BASE=$(conda info --base)
+source $CONDA_BASE/etc/profile.d/conda.sh
 conda activate llm_finetune
 
 pip install torch==2.1.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
@@ -66,7 +62,7 @@ python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA: {
 echo -e "${GREEN}✓ PyTorch 安装完成${NC}"
 
 # 6. 克隆并安装 LlamaFactory
-echo -e "\n${YELLOW}[6/8] 安装 LLaMA-Factory...${NC}"
+echo -e "\n${YELLOW}[6/6] 安装 LLaMA-Factory 和依赖...${NC}"
 cd ${WORK_DIR}
 if [ -d "LLaMA-Factory" ]; then
     echo -e "${YELLOW}→ LLaMA-Factory 已存在，更新代码${NC}"
@@ -81,18 +77,17 @@ pip install -e ".[torch,metrics]"
 llamafactory-cli version
 echo -e "${GREEN}✓ LLaMA-Factory 安装完成${NC}"
 
-# 7. 安装其他依赖
-echo -e "\n${YELLOW}[7/8] 安装其他依赖...${NC}"
+# 安装其他依赖
 pip install rouge-score nltk pandas scikit-learn
 
 # Flash Attention 2（可选，如果编译失败可跳过）
 echo -e "${YELLOW}→ 尝试安装 Flash Attention 2（可能需要几分钟）...${NC}"
 pip install flash-attn --no-build-isolation || echo -e "${YELLOW}⚠ Flash Attention 安装失败，将使用标准 attention${NC}"
 
-echo -e "${GREEN}✓ 依赖安装完成${NC}"
+echo -e "${GREEN}✓ LLaMA-Factory 和依赖安装完成${NC}"
 
-# 8. 下载模型
-echo -e "\n${YELLOW}[8/8] 准备下载 Qwen2-7B 模型...${NC}"
+# 下载模型（可选）
+echo -e "\n${YELLOW}准备下载 Qwen2-7B 模型...${NC}"
 echo -e "${YELLOW}注意：模型约 14GB，需要较长时间${NC}"
 read -p "是否现在下载模型？(y/n) " -n 1 -r
 echo

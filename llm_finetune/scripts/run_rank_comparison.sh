@@ -17,7 +17,8 @@ WORK_DIR=$(echo $PROJECT_ROOT | sed 's|/000_ai_support_tickets.*||')
 cd $WORK_DIR/LLaMA-Factory
 
 # 激活环境
-source ~/miniconda3/etc/profile.d/conda.sh
+CONDA_BASE=$(conda info --base)
+source $CONDA_BASE/etc/profile.d/conda.sh
 conda activate llm_finetune
 
 # 3 个实验配置

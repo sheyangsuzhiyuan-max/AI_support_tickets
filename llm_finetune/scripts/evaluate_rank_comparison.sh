@@ -17,7 +17,8 @@ WORK_DIR=$(echo $PROJECT_ROOT | sed 's|/000_ai_support_tickets.*||')
 cd $PROJECT_ROOT
 
 # 激活环境
-source ~/miniconda3/etc/profile.d/conda.sh
+CONDA_BASE=$(conda info --base)
+source $CONDA_BASE/etc/profile.d/conda.sh
 conda activate llm_finetune
 
 # 模型列表
