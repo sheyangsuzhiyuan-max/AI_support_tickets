@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# 环境
+.env
+.venv
+env/
+venv/
+
+# 模型文件（太大，不上传）
+models/
+*.bin
+*.safetensors
+*.gguf
+*.pth
+*.pt
+
+# 数据文件（可选：如果数据很大）
+# data/*.json  # 取消注释如果数据文件太大
+
+# 训练输出（在服务器生成，不需要提交）
+outputs/
+checkpoints/
+runs/
+logs/
+*.log
+
+# 评估结果（可以选择性提交）
+evaluation/predictions.json
+evaluation/*.png
+evaluation/*.jpg
+
+# 临时文件
+*.tmp
+*.swp
+*.swo
+*~
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# LlamaFactory 相关（如果你把整个仓库放进来）
+LLaMA-Factory/
+
+# 压缩文件
+*.tar.gz
+*.zip
+*.rar

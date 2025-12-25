@@ -1,0 +1,38 @@
+{
+  "ticket_response_generation_train": {
+    "file_name": "alpaca_response_generation_train.json",
+    "formatting": "alpaca"
+  },
+  "ticket_response_generation_val": {
+    "file_name": "alpaca_response_generation_val.json",
+    "formatting": "alpaca"
+  },
+  "ticket_response_generation_test": {
+    "file_name": "alpaca_response_generation_test.json",
+    "formatting": "alpaca"
+  },
+  "ticket_multi_task_train": {
+    "file_name": "alpaca_multi_task_train.json",
+    "formatting": "alpaca"
+  },
+  "ticket_multi_task_val": {
+    "file_name": "alpaca_multi_task_val.json",
+    "formatting": "alpaca"
+  },
+  "ticket_multi_task_test": {
+    "file_name": "alpaca_multi_task_test.json",
+    "formatting": "alpaca"
+  },
+  "ticket_classification_train": {
+    "file_name": "alpaca_classification_train.json",
+    "formatting": "alpaca"
+  },
+  "ticket_classification_val": {
+    "file_name": "alpaca_classification_val.json",
+    "formatting": "alpaca"
+  },
+  "ticket_classification_test": {
+    "file_name": "alpaca_classification_test.json",
+    "formatting": "alpaca"
+  }
+}
