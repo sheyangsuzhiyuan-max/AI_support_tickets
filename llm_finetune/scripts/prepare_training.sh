@@ -11,7 +11,7 @@ echo ""
 # 自动检测路径
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 PROJECT_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
-WORK_DIR=$(echo $PROJECT_ROOT | sed 's|/000_ai_support_tickets.*||')
+WORK_DIR=$(echo $PROJECT_ROOT | sed 's|/\(000_\)\?[Aa][Ii]_support_tickets.*||')
 LLAMAFACTORY_ROOT=$WORK_DIR/LLaMA-Factory
 MODEL_PATH=$WORK_DIR/models/qwen/Qwen2-7B-Instruct
 

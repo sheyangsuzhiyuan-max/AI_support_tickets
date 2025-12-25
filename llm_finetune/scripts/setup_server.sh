@@ -27,7 +27,7 @@ fi
 
 # 2. 获取当前工作目录
 echo -e "\n${YELLOW}[2/8] 检查工作目录...${NC}"
-WORK_DIR=$(pwd | sed 's|/000_ai_support_tickets.*||')
+WORK_DIR=$(pwd | sed 's|/\(000_\)\?[Aa][Ii]_support_tickets.*||')
 echo -e "工作目录: ${WORK_DIR}"
 mkdir -p ${WORK_DIR}/models
 echo -e "${GREEN}✓ 目录检查完成${NC}"
@@ -55,7 +55,7 @@ CONDA_BASE=$(conda info --base)
 source $CONDA_BASE/etc/profile.d/conda.sh
 conda activate llm_finetune
 
-pip install torch==2.1.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+pip install torch==2.2.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 
 # 验证
 python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA: {torch.cuda.is_available()}')"
