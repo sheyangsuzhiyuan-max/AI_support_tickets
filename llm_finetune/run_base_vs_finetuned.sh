@@ -4,13 +4,14 @@
 
 set -e
 
+# 不需要联网，直接用本地模型
 echo "=========================================="
 echo "Base vs Fine-tuned 对比实验"
 echo "=========================================="
 
 # 配置
-BASE_MODEL="/mnt/kai_ckp/alex/LLaMA-Factory/models/qwen/Qwen2-7B-Instruct"
-FINETUNED_CHECKPOINT="/mnt/kai_ckp/alex/LLaMA-Factory/outputs/qwen2-7b-ticket-lora-rank128/checkpoint-1764"  # 使用最后一个checkpoint
+BASE_MODEL="/mnt/kai_ckp/alex/LLaMA-Factory/models/qwen/Qwen2-7B-Instruct"  # 使用服务器上的本地模型
+FINETUNED_CHECKPOINT="/mnt/kai_ckp/alex/LLaMA-Factory/outputs/qwen2-7b-ticket-lora-rank128/checkpoint-1764"
 TEST_DATA="/mnt/kai_ckp/alex/000_ai_support_tickets/llm_finetune/data/alpaca_multi_task_test.json"
 MAX_SAMPLES=100  # 先测100条，成功后改为4240
 
@@ -21,23 +22,20 @@ mkdir -p "$OUT_DIR"
 echo ""
 echo "1️⃣  测试 Base Model（未fine-tune）"
 echo "----------------------------------------"
-python scripts/inference.py \
+python scripts/inference_local.py \
     --model_path "$BASE_MODEL" \
     --test_data "$TEST_DATA" \
-    --output_file "$OUT_DIR/base_predictions.json" \
-    --use_lora false \
-    --max_samples $MAX_SAMPLES
+    --output "$OUT_DIR/base_predictions.json"
 
 echo ""
 echo "2️⃣  测试 Fine-tuned Model"
 echo "----------------------------------------"
-python scripts/inference.py \
+python scripts/inference_local.py \
     --model_path "$FINETUNED_CHECKPOINT" \
     --base_model "$BASE_MODEL" \
     --test_data "$TEST_DATA" \
-    --output_file "$OUT_DIR/finetuned_predictions.json" \
-    --use_lora true \
-    --max_samples $MAX_SAMPLES
+    --output "$OUT_DIR/finetuned_predictions.json" \
+    --use_lora
 
 echo ""
 echo "3️⃣  评估 Base Model"
