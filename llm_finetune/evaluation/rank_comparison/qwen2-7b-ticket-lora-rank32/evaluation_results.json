@@ -1,0 +1,17 @@
+{
+  "aggregated": {
+    "avg_rouge1_f": 0.4825685930106234,
+    "std_rouge1_f": 0.16847107216512666,
+    "avg_rouge2_f": 0.24960635713337284,
+    "std_rouge2_f": 0.172846948846231,
+    "avg_rougeL_f": 0.3567189197975578,
+    "std_rougeL_f": 0.17096368849184268,
+    "avg_bleu": 0.149462101469168,
+    "type_accuracy": 0.8127358490566038,
+    "queue_accuracy": 0.4068396226415094,
+    "priority_accuracy": 0.46014150943396226,
+    "avg_pred_length": 58.992216981132074,
+    "avg_ref_length": 57.92169811320755
+  },
+  "sample_count": 4240
+}
