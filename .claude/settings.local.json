@@ -5,7 +5,9 @@
       "Bash(git init:*)",
       "Bash(git commit:*)",
       "Bash(git add:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(wc:*)",
+      "Bash(cat:*)"
     ]
   }
 }
