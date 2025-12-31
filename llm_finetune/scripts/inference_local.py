@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 """
-推理脚本 - 使用微调后的模型进行预测
+推理脚本 - 使用微调后的模型进行预测（本地模型版本）
 
 支持:
 1. 单条推理
 2. 批量推理
 3. 交互式推理
 """
+
+# 必须在导入 transformers 之前设置环境变量，强制使用本地模型
+import os
+os.environ['HF_HUB_OFFLINE'] = '1'
+os.environ['TRANSFORMERS_OFFLINE'] = '1'
+os.environ['HF_DATASETS_OFFLINE'] = '1'
 
 import json
 import torch
@@ -26,11 +32,11 @@ def load_model(model_path: str, use_lora: bool = True, base_model: str = None):
         base_model: 基础模型路径（仅当 use_lora=True 时需要）
     """
     from transformers import AutoModelForCausalLM, AutoTokenizer
-    import os
 
     print(f"Loading model from {model_path}...")
+    print(f"Offline mode: HF_HUB_OFFLINE={os.environ.get('HF_HUB_OFFLINE')}")
 
-    # 检测是否为本地路径，强制使用本地文件
+    # 检测是否为本地路径
     is_local = os.path.exists(model_path) if model_path else False
     is_base_local = os.path.exists(base_model) if base_model else False
 

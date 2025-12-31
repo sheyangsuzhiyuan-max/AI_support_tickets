@@ -1,0 +1,11 @@
+{
+  "aggregated": {
+    "avg_bleu": 0.0,
+    "type_accuracy": 0.4990566037735849,
+    "queue_accuracy": 0.2976415094339623,
+    "priority_accuracy": 0.33679245283018866,
+    "avg_pred_length": 319.59481132075473,
+    "avg_ref_length": 57.92169811320755
+  },
+  "sample_count": 4240
+}
