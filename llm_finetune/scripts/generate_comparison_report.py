@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-生成 Base Model vs Fine-tuned Model 对比报告
+Generate Base Model vs Fine-tuned Model Comparison Report
 """
 
 import json
@@ -10,13 +10,17 @@ from datetime import datetime
 
 
 def load_results(filepath):
-    """加载评估结果"""
+    """Load evaluation results"""
     with open(filepath, 'r', encoding='utf-8') as f:
-        return json.load(f)
+        data = json.load(f)
+    # Extract aggregated field if present
+    if 'aggregated' in data:
+        return data['aggregated']
+    return data
 
 
 def calculate_improvement(base_val, ft_val):
-    """计算提升百分比"""
+    """Calculate improvement percentage"""
     if base_val == 0:
         return "N/A"
     improvement = ((ft_val - base_val) / base_val) * 100
@@ -24,7 +28,7 @@ def calculate_improvement(base_val, ft_val):
 
 
 def generate_report(base_results, finetuned_results, output_path):
-    """生成对比报告"""
+    """Generate comparison report"""
 
     report = []
     report.append("# Base Model vs Fine-tuned Model Comparison Report")

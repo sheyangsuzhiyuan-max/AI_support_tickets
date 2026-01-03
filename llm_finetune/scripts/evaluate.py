@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-评估脚本 - 支持自动评估（ROUGE, BLEU）和人工评估
+Evaluation Script - Supports automatic evaluation (ROUGE, BLEU) and human evaluation
 
-功能:
-1. ROUGE 评估（ROUGE-1, ROUGE-2, ROUGE-L）
-2. BLEU 评估
-3. 分类准确率评估（多任务模式）
-4. 生成人工评估模板
-5. 统计分析与可视化
+Features:
+1. ROUGE evaluation (ROUGE-1, ROUGE-2, ROUGE-L)
+2. BLEU evaluation
+3. Classification accuracy evaluation (multi-task mode)
+4. Human evaluation template generation
+5. Statistical analysis and visualization
 """
 
 import json
@@ -20,7 +20,7 @@ from collections import defaultdict
 import argparse
 from datetime import datetime
 
-# 评估指标
+# Evaluation metrics
 try:
     from rouge_score import rouge_scorer
     ROUGE_AVAILABLE = True
@@ -39,7 +39,7 @@ except ImportError:
 
 
 class TicketEvaluator:
-    """工单回复评估器"""
+    """Ticket response evaluator"""
 
     def __init__(self, task_type: str = "multi_task"):
         self.task_type = task_type
@@ -54,14 +54,14 @@ class TicketEvaluator:
             self.smoothing = SmoothingFunction().method1
 
     def extract_classification(self, text: str) -> Dict[str, str]:
-        """从多任务输出中提取分类结果"""
+        """Extract classification results from multi-task output"""
         result = {
             'type': None,
             'queue': None,
             'priority': None
         }
 
-        # 匹配 "- Type: xxx" 格式
+        # Match "- Type: xxx" format
         type_match = re.search(r'Type:\s*(\w+)', text, re.IGNORECASE)
         if type_match:
             result['type'] = type_match.group(1)
@@ -77,15 +77,15 @@ class TicketEvaluator:
         return result
 
     def extract_response(self, text: str) -> str:
-        """从多任务输出中提取回复内容"""
-        # 查找 "Response:" 后的内容
+        """Extract response content from multi-task output"""
+        # Find content after "Response:"
         match = re.search(r'Response:\s*(.+)', text, re.DOTALL | re.IGNORECASE)
         if match:
             return match.group(1).strip()
         return text.strip()
 
     def compute_rouge(self, prediction: str, reference: str) -> Dict[str, float]:
-        """计算 ROUGE 分数"""
+        """Compute ROUGE scores"""
         if not ROUGE_AVAILABLE:
             return {}
 
@@ -103,7 +103,7 @@ class TicketEvaluator:
         }
 
     def compute_bleu(self, prediction: str, reference: str) -> float:
-        """计算 BLEU 分数"""
+        """Compute BLEU score"""
         if not BLEU_AVAILABLE:
             return 0.0
 
@@ -123,12 +123,12 @@ class TicketEvaluator:
         reference: str,
         reference_classification: Optional[Dict] = None
     ) -> Dict:
-        """评估单个样本"""
+        """Evaluate a single sample"""
         result = {}
 
-        # 如果是多任务模式，分别评估分类和生成
+        # For multi-task mode, evaluate classification and generation separately
         if self.task_type == "multi_task":
-            # 提取分类
+            # Extract classification
             pred_class = self.extract_classification(prediction)
             result['pred_classification'] = pred_class
 
@@ -139,21 +139,21 @@ class TicketEvaluator:
                     'priority': pred_class['priority'] == reference_classification.get('priority'),
                 }
 
-            # 提取回复
+            # Extract response
             pred_response = self.extract_response(prediction)
             ref_response = self.extract_response(reference)
         else:
             pred_response = prediction
             ref_response = reference
 
-        # 计算 ROUGE
+        # Compute ROUGE
         rouge_scores = self.compute_rouge(pred_response, ref_response)
         result.update(rouge_scores)
 
-        # 计算 BLEU
+        # Compute BLEU
         result['bleu'] = self.compute_bleu(pred_response, ref_response)
 
-        # 长度统计
+        # Length statistics
         result['pred_length'] = len(pred_response.split())
         result['ref_length'] = len(ref_response.split())
 
@@ -165,7 +165,7 @@ class TicketEvaluator:
         references: List[str],
         reference_classifications: Optional[List[Dict]] = None
     ) -> Dict:
-        """批量评估"""
+        """Batch evaluation"""
         all_results = []
 
         for i, (pred, ref) in enumerate(zip(predictions, references)):
@@ -173,10 +173,10 @@ class TicketEvaluator:
             result = self.evaluate_sample(pred, ref, ref_class)
             all_results.append(result)
 
-        # 聚合结果
+        # Aggregate results
         aggregated = {}
 
-        # ROUGE 平均分
+        # ROUGE average scores
         rouge_keys = ['rouge1_f', 'rouge2_f', 'rougeL_f']
         for key in rouge_keys:
             values = [r.get(key, 0) for r in all_results if key in r]
@@ -184,11 +184,11 @@ class TicketEvaluator:
                 aggregated[f'avg_{key}'] = np.mean(values)
                 aggregated[f'std_{key}'] = np.std(values)
 
-        # BLEU 平均分
+        # BLEU average score
         bleu_values = [r.get('bleu', 0) for r in all_results]
         aggregated['avg_bleu'] = np.mean(bleu_values)
 
-        # 分类准确率（多任务模式）
+        # Classification accuracy (multi-task mode)
         if self.task_type == "multi_task" and reference_classifications:
             for field in ['type', 'queue', 'priority']:
                 correct = sum(
@@ -197,7 +197,7 @@ class TicketEvaluator:
                 )
                 aggregated[f'{field}_accuracy'] = correct / len(all_results)
 
-        # 长度统计
+        # Length statistics
         aggregated['avg_pred_length'] = np.mean([r['pred_length'] for r in all_results])
         aggregated['avg_ref_length'] = np.mean([r['ref_length'] for r in all_results])
 
@@ -213,16 +213,16 @@ def create_human_eval_template(
     n_samples: int = 100
 ) -> None:
     """
-    创建人工评估模板
+    Create human evaluation template
 
-    评估维度:
-    1. 相关性 (1-5): 回复是否解决了客户问题
-    2. 专业性 (1-5): 回复是否专业、准确
-    3. 完整性 (1-5): 回复是否完整、不遗漏信息
-    4. 语气 (1-5): 回复是否礼貌、有同理心
-    5. 总体质量 (1-5): 整体评分
+    Evaluation dimensions:
+    1. Relevance (1-5): Does the response address the customer's issue
+    2. Professionalism (1-5): Is the response professional and accurate
+    3. Completeness (1-5): Is the response complete without missing information
+    4. Tone (1-5): Is the response polite and empathetic
+    5. Overall quality (1-5): Overall rating
     """
-    # 随机采样
+    # Random sampling
     if len(samples) > n_samples:
         import random
         samples = random.sample(samples, n_samples)
@@ -231,15 +231,15 @@ def create_human_eval_template(
     for i, sample in enumerate(samples):
         rows.append({
             'id': i + 1,
-            'input': sample.get('input', '')[:500],  # 截断
+            'input': sample.get('input', '')[:500],  # Truncate
             'reference': sample.get('reference', '')[:500],
             'prediction': sample.get('prediction', '')[:500],
-            'relevance': '',      # 相关性
-            'professionalism': '',  # 专业性
-            'completeness': '',   # 完整性
-            'tone': '',           # 语气
-            'overall': '',        # 总体
-            'comments': ''        # 备注
+            'relevance': '',
+            'professionalism': '',
+            'completeness': '',
+            'tone': '',
+            'overall': '',
+            'comments': ''
         })
 
     df = pd.DataFrame(rows)
@@ -249,59 +249,59 @@ def create_human_eval_template(
 
 
 def generate_report(results: Dict, output_path: Path) -> None:
-    """生成评估报告"""
+    """Generate evaluation report"""
     report = []
     report.append("=" * 60)
-    report.append("工单回复生成 - 评估报告")
-    report.append(f"生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    report.append("Ticket Response Generation - Evaluation Report")
+    report.append(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     report.append("=" * 60)
     report.append("")
 
     agg = results['aggregated']
 
-    # ROUGE 分数
-    report.append("## 自动评估指标")
+    # ROUGE scores
+    report.append("## Automatic Evaluation Metrics")
     report.append("")
-    report.append("### ROUGE 分数")
-    report.append(f"  ROUGE-1 F1: {agg.get('avg_rouge1_f', 0):.4f} (±{agg.get('std_rouge1_f', 0):.4f})")
-    report.append(f"  ROUGE-2 F1: {agg.get('avg_rouge2_f', 0):.4f} (±{agg.get('std_rouge2_f', 0):.4f})")
-    report.append(f"  ROUGE-L F1: {agg.get('avg_rougeL_f', 0):.4f} (±{agg.get('std_rougeL_f', 0):.4f})")
+    report.append("### ROUGE Scores")
+    report.append(f"  ROUGE-1 F1: {agg.get('avg_rouge1_f', 0):.4f} (+/-{agg.get('std_rouge1_f', 0):.4f})")
+    report.append(f"  ROUGE-2 F1: {agg.get('avg_rouge2_f', 0):.4f} (+/-{agg.get('std_rouge2_f', 0):.4f})")
+    report.append(f"  ROUGE-L F1: {agg.get('avg_rougeL_f', 0):.4f} (+/-{agg.get('std_rougeL_f', 0):.4f})")
     report.append("")
 
-    report.append("### BLEU 分数")
+    report.append("### BLEU Score")
     report.append(f"  BLEU: {agg.get('avg_bleu', 0):.4f}")
     report.append("")
 
-    # 分类准确率
+    # Classification accuracy
     if 'type_accuracy' in agg:
-        report.append("### 分类准确率")
+        report.append("### Classification Accuracy")
         report.append(f"  Type: {agg.get('type_accuracy', 0):.2%}")
         report.append(f"  Queue: {agg.get('queue_accuracy', 0):.2%}")
         report.append(f"  Priority: {agg.get('priority_accuracy', 0):.2%}")
         report.append("")
 
-    # 长度统计
-    report.append("### 长度统计")
-    report.append(f"  平均预测长度: {agg.get('avg_pred_length', 0):.1f} 词")
-    report.append(f"  平均参考长度: {agg.get('avg_ref_length', 0):.1f} 词")
+    # Length statistics
+    report.append("### Length Statistics")
+    report.append(f"  Avg prediction length: {agg.get('avg_pred_length', 0):.1f} words")
+    report.append(f"  Avg reference length: {agg.get('avg_ref_length', 0):.1f} words")
     report.append("")
 
-    # 质量分析
-    report.append("## 质量分析")
+    # Quality analysis
+    report.append("## Quality Analysis")
     report.append("")
 
     samples = results['samples']
     rouge_scores = [s.get('rougeL_f', 0) for s in samples]
 
-    report.append("### ROUGE-L 分布")
-    report.append(f"  优秀 (>0.5): {sum(1 for s in rouge_scores if s > 0.5)} 条 ({sum(1 for s in rouge_scores if s > 0.5)/len(samples):.1%})")
-    report.append(f"  良好 (0.3-0.5): {sum(1 for s in rouge_scores if 0.3 <= s <= 0.5)} 条 ({sum(1 for s in rouge_scores if 0.3 <= s <= 0.5)/len(samples):.1%})")
-    report.append(f"  一般 (<0.3): {sum(1 for s in rouge_scores if s < 0.3)} 条 ({sum(1 for s in rouge_scores if s < 0.3)/len(samples):.1%})")
+    report.append("### ROUGE-L Distribution")
+    report.append(f"  Excellent (>0.5): {sum(1 for s in rouge_scores if s > 0.5)} samples ({sum(1 for s in rouge_scores if s > 0.5)/len(samples):.1%})")
+    report.append(f"  Good (0.3-0.5): {sum(1 for s in rouge_scores if 0.3 <= s <= 0.5)} samples ({sum(1 for s in rouge_scores if 0.3 <= s <= 0.5)/len(samples):.1%})")
+    report.append(f"  Fair (<0.3): {sum(1 for s in rouge_scores if s < 0.3)} samples ({sum(1 for s in rouge_scores if s < 0.3)/len(samples):.1%})")
 
     report.append("")
     report.append("=" * 60)
 
-    # 保存报告
+    # Save report
     report_text = "\n".join(report)
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(report_text)
@@ -329,18 +329,18 @@ def main():
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # 加载数据
+    # Load data
     with open(args.predictions, 'r', encoding='utf-8') as f:
         predictions_data = json.load(f)
 
     with open(args.references, 'r', encoding='utf-8') as f:
         references_data = json.load(f)
 
-    # 提取预测和参考
+    # Extract predictions and references
     predictions = [p['output'] for p in predictions_data]
     references = [r['output'] for r in references_data]
 
-    # 如果是多任务，提取分类信息
+    # For multi-task, extract classification info
     reference_classifications = None
     if args.task_type == "multi_task":
         evaluator = TicketEvaluator(task_type="multi_task")
@@ -351,27 +351,27 @@ def main():
     else:
         evaluator = TicketEvaluator(task_type="response_generation")
 
-    # 评估
+    # Evaluate
     print("Evaluating...")
     results = evaluator.evaluate_batch(
         predictions, references, reference_classifications
     )
 
-    # 生成报告
+    # Generate report
     report_path = output_dir / "evaluation_report.txt"
     generate_report(results, report_path)
 
-    # 保存详细结果
+    # Save detailed results
     results_path = output_dir / "evaluation_results.json"
     with open(results_path, 'w', encoding='utf-8') as f:
-        # 只保存可序列化的部分
+        # Only save serializable parts
         json.dump({
             'aggregated': results['aggregated'],
             'sample_count': len(results['samples'])
         }, f, indent=2)
     print(f"Detailed results saved to {results_path}")
 
-    # 创建人工评估模板
+    # Create human evaluation template
     human_eval_samples = [
         {
             'input': references_data[i]['input'],

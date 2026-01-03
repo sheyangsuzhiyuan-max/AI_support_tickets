@@ -213,6 +213,20 @@ data/bert_experiments*.csv
 !figures/
 !BERT_Finetuning_Report.md
 
-# macOS垃圾文件
+# macOS junk files
 src/model/__MACOSX/
 src/model/._*
+
+# --- LLM Fine-tuning (large files not for git) ---
+llm_finetune/outputs/
+llm_finetune/evaluation/**/base_predictions.json
+llm_finetune/evaluation/**/finetuned_predictions.json
+llm_finetune/evaluation/**/*_predictions.json
+
+# Tutorial/Guide files (personal notes, not for interview)
+llm_finetune/TUTORIAL.md
+llm_finetune/GUIDE.md
+llm_finetune/evaluation/model_analysis_report.md
+
+# Assignment zip files
+*.zip

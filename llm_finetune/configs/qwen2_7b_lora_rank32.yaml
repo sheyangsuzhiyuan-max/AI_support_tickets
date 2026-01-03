@@ -1,4 +1,4 @@
-### 实验2: LoRA rank=32 (中等配置)
+### Experiment 2: LoRA rank=32 (Medium configuration)
 
 ### Model
 model_name_or_path: Qwen/Qwen2-7B-Instruct
@@ -8,7 +8,7 @@ stage: sft
 do_train: true
 finetuning_type: lora
 
-### LoRA Configuration - 实验2: 中 rank
+### LoRA Configuration - Experiment 2: Medium rank
 lora_rank: 32
 lora_alpha: 64
 lora_dropout: 0.1

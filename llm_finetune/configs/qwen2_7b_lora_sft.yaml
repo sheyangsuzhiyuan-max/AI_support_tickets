@@ -1,5 +1,5 @@
-### Qwen2-7B LoRA SFT 配置文件
-### 用于智能工单系统的回复生成任务
+### Qwen2-7B LoRA SFT Configuration
+### For Smart Ticket System Response Generation Task
 
 ### Model
 model_name_or_path: Qwen/Qwen2-7B-Instruct

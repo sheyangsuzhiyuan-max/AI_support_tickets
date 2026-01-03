@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-数据预处理脚本 - 将工单数据转换为 LlamaFactory 所需的格式
+Data Preprocessing Script - Convert ticket data to LlamaFactory format
 
-支持两种任务模式:
-1. 回复生成 (response_generation): subject + body -> answer
-2. 多任务 (multi_task): subject + body -> type + queue + priority + answer
+Supports two task modes:
+1. Response generation (response_generation): subject + body -> answer
+2. Multi-task (multi_task): subject + body -> type + queue + priority + answer
 
-输出格式: Alpaca format (LlamaFactory 标准格式)
+Output format: Alpaca format (LlamaFactory standard format)
 """
 
 import json
@@ -18,17 +18,17 @@ import re
 
 
 def clean_text(text: str) -> str:
-    """清理文本，保留必要信息"""
+    """Clean text while preserving essential information"""
     if pd.isna(text) or not isinstance(text, str):
         return ""
-    # 移除多余空白，但保留段落结构
+    # Remove excess whitespace while preserving paragraph structure
     text = re.sub(r'\n\s*\n', '\n\n', text)
     text = re.sub(r' +', ' ', text)
     return text.strip()
 
 
 def format_tags(row: pd.Series) -> str:
-    """格式化标签字段"""
+    """Format tag fields"""
     tags = []
     for i in range(1, 9):
         tag = row.get(f'tag_{i}')
@@ -39,20 +39,20 @@ def format_tags(row: pd.Series) -> str:
 
 def create_response_generation_sample(row: pd.Series) -> Dict:
     """
-    创建回复生成任务的样本
+    Create sample for response generation task
 
-    Alpaca 格式:
+    Alpaca format:
     {
-        "instruction": "任务指令",
-        "input": "用户输入",
-        "output": "期望输出"
+        "instruction": "Task instruction",
+        "input": "User input",
+        "output": "Expected output"
     }
     """
     subject = clean_text(row.get('subject', ''))
     body = clean_text(row.get('body', ''))
     answer = clean_text(row.get('answer', ''))
 
-    # 构建输入
+    # Build input
     if subject:
         user_input = f"Subject: {subject}\n\nContent:\n{body}"
     else:
@@ -75,9 +75,9 @@ Guidelines:
 
 def create_multi_task_sample(row: pd.Series) -> Dict:
     """
-    创建多任务样本（分类 + 生成）
+    Create multi-task sample (classification + generation)
 
-    输出格式:
+    Output format:
     Classification:
     - Type: {type}
     - Queue: {queue}
@@ -94,7 +94,7 @@ def create_multi_task_sample(row: pd.Series) -> Dict:
     priority = row.get('priority', 'medium')
     tags = format_tags(row)
 
-    # 构建输入
+    # Build input
     if subject:
         user_input = f"Subject: {subject}\n\nContent:\n{body}"
     else:
@@ -127,7 +127,7 @@ Response:
 
 def create_classification_only_sample(row: pd.Series) -> Dict:
     """
-    创建纯分类任务样本
+    Create classification-only task sample
     """
     subject = clean_text(row.get('subject', ''))
     body = clean_text(row.get('body', ''))
@@ -163,24 +163,24 @@ def process_dataset(
     max_samples: Optional[int] = None
 ) -> int:
     """
-    处理数据集
+    Process dataset
 
     Args:
-        input_path: 输入 CSV 文件路径
-        output_path: 输出 JSON 文件路径
-        task_type: 任务类型 (response_generation, multi_task, classification)
-        max_samples: 最大样本数（用于测试）
+        input_path: Input CSV file path
+        output_path: Output JSON file path
+        task_type: Task type (response_generation, multi_task, classification)
+        max_samples: Maximum number of samples (for testing)
 
     Returns:
-        处理的样本数
+        Number of processed samples
     """
-    # 读取数据
+    # Read data
     df = pd.read_csv(input_path)
 
     if max_samples:
         df = df.head(max_samples)
 
-    # 选择转换函数
+    # Select conversion function
     if task_type == "response_generation":
         convert_func = create_response_generation_sample
     elif task_type == "multi_task":
@@ -190,14 +190,14 @@ def process_dataset(
     else:
         raise ValueError(f"Unknown task type: {task_type}")
 
-    # 转换数据
+    # Convert data
     samples = []
     skipped = 0
 
     for idx, row in df.iterrows():
         try:
             sample = convert_func(row)
-            # 验证样本有效性
+            # Validate sample
             if sample['input'] and sample['output']:
                 samples.append(sample)
             else:
@@ -206,7 +206,7 @@ def process_dataset(
             print(f"Warning: Skipping row {idx} due to error: {e}")
             skipped += 1
 
-    # 保存
+    # Save
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(samples, f, ensure_ascii=False, indent=2)
@@ -217,7 +217,7 @@ def process_dataset(
 
 def create_dataset_info(output_dir: Path, task_type: str):
     """
-    创建 LlamaFactory 所需的 dataset_info.json
+    Create dataset_info.json required by LlamaFactory
     """
     dataset_info = {
         f"ticket_{task_type}_train": {
@@ -236,7 +236,7 @@ def create_dataset_info(output_dir: Path, task_type: str):
 
     output_path = output_dir / "dataset_info.json"
 
-    # 如果已存在，合并
+    # Merge if exists
     if output_path.exists():
         with open(output_path, 'r') as f:
             existing = json.load(f)
@@ -266,7 +266,7 @@ def main():
 
     args = parser.parse_args()
 
-    # 获取项目根目录
+    # Get project root directory
     script_dir = Path(__file__).parent
     data_dir = (script_dir / args.data_dir).resolve()
     output_dir = (script_dir / args.output_dir).resolve()
@@ -276,7 +276,7 @@ def main():
     print(f"Output directory: {output_dir}")
     print("-" * 50)
 
-    # 处理每个数据集
+    # Process each dataset
     splits = ['train', 'val', 'test']
 
     for split in splits:
@@ -296,7 +296,7 @@ def main():
         )
         print(f"Saved to {output_path}")
 
-    # 创建 dataset_info.json
+    # Create dataset_info.json
     create_dataset_info(output_dir, args.task_type)
 
     print("\n" + "=" * 50)
